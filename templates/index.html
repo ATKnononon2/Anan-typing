@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>タイピングゲーム</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>タイピングゲーム</h1>
+        <div id="game-area">
+            <div id="timer">残り時間: 60秒</div>
+            <div id="target-text"></div>
+            <div id="romaji-display"></div>
+            <input type="text" id="typing-input" placeholder="ここに入力してください" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="english">
+            <button id="start-button">スタート</button>
+            <div id="error-overlay" class="overlay"></div>
+            <div id="miss-display" class="miss-text">MISS!</div>
+            <p id="result"></p>
+        </div>
+
+        <hr>
+
+        <div id="ranking-area">
+            <h2>ランキング</h2>
+            <ol id="rank-list"></ol>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
