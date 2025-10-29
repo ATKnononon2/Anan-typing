@@ -44,14 +44,13 @@ class Ranking(db.Model):
             'date': self.date
         }
 
-# アプリケーション起動前にデータベーステーブルを作成する（初回のみ）
-@app.before_first_request
-def create_tables():
-    """
-    アプリケーションが初めてリクエストを受け取る前にデータベーステーブルを作成します。
-    """
-    db.create_all()
-    logging.info("データベーステーブルが作成されたか、すでに存在しています。")
+def create_tables_once():
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":  # 実際のサーバープロセスだけ
+        with app.app_context():
+            db.create_all()
+            logging.info("データベーステーブルが作成されたか、すでに存在しています。")
+
+create_tables_once()
 
 @app.route('/')
 def index():
