@@ -42,8 +42,22 @@ h1, h2 {
     margin-bottom: 20px;
 }
 
+#clickable-time {
+    /* クリック可能であることを示すカーソル */
+    cursor: pointer; 
+    font-weight: bold; /* 文字を太く */
+    user-select: none; /* テキスト選択を防止 */
+    transition: background-color 0.2s; /* ホバー時の変化を滑らかに */
+}
+
+#clickable-time:hover {
+    background-color: #f11414; /* ホバー時に少し濃い青にする */
+}
+
 #timer.countdown {
     animation: pulse 1s infinite alternate; /* カウントダウン時のアニメーション */
+    font-size: 3em;
+    margin-bottom: -19px;
 }
 
 @keyframes pulse {
@@ -86,7 +100,7 @@ h1, h2 {
 
 #typing-input {
     width: calc(100% - 20px);
-    padding: 10px;
+    padding: 25px;
     font-size: 1.5em;
     border: 2px solid #007bff;
     border-radius: 5px;
