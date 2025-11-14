@@ -10,9 +10,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 app = Flask(__name__)
 
 # データベース設定
-# SQLiteを使用します。本番環境ではPostgreSQLなど、より堅牢なデータベースを推奨します。
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # シグナルを追跡しない設定（パフォーマンスのため）
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
 
 db = SQLAlchemy(app)
 
@@ -23,13 +22,13 @@ class Ranking(db.Model):
     """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
-    accuracy = db.Column(db.Float, nullable=False) # 正誤率
-    tps = db.Column(db.Float, nullable=False)      # TPS (Type Per Second)
-    turns = db.Column(db.Integer, nullable=False)  # 継続ターン数
-    date = db.Column(db.String(50), nullable=False) # 記録日時
+    accuracy = db.Column(db.Float, nullable=False)        # 正誤率
+    tps = db.Column(db.Float, nullable=False)             # TPS (Type Per Second)
+    correct_strokes = db.Column(db.Integer, nullable=False) # ★追加: 正当文字数
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow) # ★修正: 記録日時をDateTime型で保持
 
     def __repr__(self):
-        return f"<Ranking {self.name} - TPS: {self.tps}>"
+        return f"<Ranking {self.name} - CorrectStrokes: {self.correct_strokes}>"
 
     def to_dict(self):
         """
@@ -40,13 +39,17 @@ class Ranking(db.Model):
             'name': self.name,
             'accuracy': self.accuracy,
             'tps': self.tps,
-            'turns': self.turns,
-            'date': self.date
+            'correct_strokes': self.correct_strokes, # ★追加
+            # データベースのタイムスタンプをクライアント表示用に整形
+            'date': self.timestamp.strftime('%Y-%m-%d %H:%M:%S') 
         }
 
 def create_tables_once():
-    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":  # 実際のサーバープロセスだけ
+    # ... (既存のコード) ...
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         with app.app_context():
+            # 既存のテーブルをドロップして新しいスキーマを適用したい場合は以下の2行を有効化
+            # db.drop_all()
             db.create_all()
             logging.info("データベーステーブルが作成されたか、すでに存在しています。")
 
@@ -63,16 +66,15 @@ def index():
 def get_rankings():
     """
     保存されているランキングデータを取得し、JSON形式で返します。
-    TPSで降順、次にターン数で降順、最後に精度で降順にソートし、上位10件を返します。
+    正当文字数で降順、次にTPSで降順、最後に精度で降順にソートし、上位10件を返します。
     """
     try:
-        # データベースからランキングを取得し、ソートして上位10件に制限
-        # SQLAlchemyのorder_byは、複数の条件をタプルで指定することで、優先順位をつけられます。
-        # SQLiteではfloatの比較が厳密でない場合があるため、tps, turns, accuracyの順で明確に指定。
+        # ★修正: 正当文字数 -> TPS -> 精度 の順でソート
         all_rankings = Ranking.query.order_by(
-            Ranking.tps.desc(),
-            Ranking.turns.desc(),
-            Ranking.accuracy.desc()
+            Ranking.correct_strokes.desc(), # 1. 正当文字数 (最優先)
+            Ranking.tps.desc(),             # 2. TPS
+            Ranking.accuracy.desc(),        # 3. 精度
+            Ranking.timestamp.asc()         # 4. 同スコアの場合は登録が古い順
         ).limit(10).all()
 
         # オブジェクトのリストを辞書のリストに変換
@@ -94,12 +96,13 @@ def add_ranking():
         return jsonify({"error": "No data provided"}), 400
 
     # スコアの必須項目と型チェック
+    # ★修正: 'date' を削除し、'correct_strokes' を追加
     required_fields = {
         'name': str,
-        'accuracy': (float, int), # floatまたはintを許容
+        'accuracy': (float, int), 
         'tps': (float, int),
-        'turns': int,
-        'date': str
+        'correct_strokes': (float, int), # クライアント側でIntegerとして送信されることを期待
+        # 'date' はクライアント側から受け取る必要はなくなりました
     }
 
     for field, expected_type in required_fields.items():
@@ -121,15 +124,11 @@ def add_ranking():
     try:
         accuracy = float(new_score_data['accuracy'])
         tps = float(new_score_data['tps'])
-        turns = int(new_score_data['turns'])
-        # 日付形式の簡易チェック（より厳密にするならdatetime.strptimeを使う）
-        date_str = new_score_data['date']
-        if not date_str or len(date_str) > 100: # 日付文字列の長さを制限
-             logging.warning(f"ランキング追加リクエスト: 日付形式が不正です: '{date_str}'")
-             return jsonify({"error": "Invalid date format or length"}), 400
-
-        if accuracy < 0 or tps < 0 or turns < 0:
-            logging.warning(f"ランキング追加リクエスト: スコアが負の値です。accuracy={accuracy}, tps={tps}, turns={turns}")
+        correct_strokes = int(new_score_data['correct_strokes']) # ★追加
+        
+        # 値の範囲チェック
+        if accuracy < 0 or tps < 0 or correct_strokes < 0:
+            logging.warning(f"ランキング追加リクエスト: スコアが負の値です。accuracy={accuracy}, tps={tps}, correct_strokes={correct_strokes}")
             return jsonify({"error": "Score values cannot be negative"}), 400
 
     except (ValueError, TypeError) as e:
@@ -143,8 +142,8 @@ def add_ranking():
             name=name,
             accuracy=accuracy,
             tps=tps,
-            turns=turns,
-            date=date_str
+            correct_strokes=correct_strokes, # ★追加
+            # timestampはdefaultで自動設定されます
         )
         db.session.add(new_ranking)
         db.session.commit()
@@ -152,8 +151,8 @@ def add_ranking():
 
         # 追加後、再度ランキングを取得して上位10件を返す
         all_rankings = Ranking.query.order_by(
+            Ranking.correct_strokes.desc(),
             Ranking.tps.desc(),
-            Ranking.turns.desc(),
             Ranking.accuracy.desc()
         ).limit(10).all()
         updated_rankings_data = [ranking.to_dict() for ranking in all_rankings]
@@ -167,6 +166,6 @@ def add_ranking():
 
 if __name__ == '__main__':
     # Flaskアプリを開発モードで実行
-    # 本番環境ではGunicornやuWSGIなどのWSGIサーバーを使用することを推奨します。
-    # debug=True は開発用であり、本番環境では False にするか、WSGIサーバーを使用してください。
+    # 既存のDBファイルを削除して新しいスキーマで再構築したい場合は、
+    # アプリ実行前に 'site.db' ファイルを削除してください。
     app.run(debug=True)
