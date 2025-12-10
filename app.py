@@ -1,171 +1,167 @@
-from flask import Flask, render_template, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
 import os
+import time
 import datetime
 import logging
+from flask import Flask, render_template, request, redirect, session, url_for, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
 # ロギング設定
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = Flask(__name__)
+app.secret_key = 'random_secret_key_for_session'
+
+# ==========================================
+# 🛑 設定エリア
+# ==========================================
+GOOGLE_CLIENT_ID = "615786165928-5j6gjs46idi14kgqvcu6r6qkugi9f739.apps.googleusercontent.com"
+CODESPACES_URL = "https://ominous-guacamole-g476wxpvr7pgfwx6r-5000.app.github.dev"
+ALLOWED_DOMAIN = "it-mirai-h.ibk.ed.jp"
 
 # データベース設定
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    'SQLALCHEMY_DATABASE_URI', 
+    'mysql+pymysql://root:rootpassword@db/my_flask_db'
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
-
 db = SQLAlchemy(app)
 
-# ランキングモデルの定義
-class Ranking(db.Model):
-    """
-    ランキングデータを保存するためのデータベースモデル。
-    """
+# ==========================================
+# 🛑 モデル定義
+# ==========================================
+class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), nullable=False)
-    accuracy = db.Column(db.Float, nullable=False)        # 正誤率
-    tps = db.Column(db.Float, nullable=False)             # TPS (Type Per Second)
-    correct_strokes = db.Column(db.Integer, nullable=False) # ★追加: 正当文字数
-    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow) # ★修正: 記録日時をDateTime型で保持
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    name = db.Column(db.String(80), nullable=True)
+    picture = db.Column(db.String(255), nullable=True)
 
-    def __repr__(self):
-        return f"<Ranking {self.name} - CorrectStrokes: {self.correct_strokes}>"
+class Ranking(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), nullable=False)   # メールアドレス
+    accuracy = db.Column(db.Float, nullable=False)      # 正誤率
+    tps = db.Column(db.Float, nullable=False)           # TPS
+    correct_strokes = db.Column(db.Integer, nullable=False) # 正打数
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
     def to_dict(self):
-        """
-        オブジェクトを辞書形式に変換し、JSONレスポンスで利用できるようにします。
-        """
         return {
-            'id': self.id,
-            'name': self.name,
-            'accuracy': self.accuracy,
+            'email': self.email,
+            'correct_strokes': self.correct_strokes,
             'tps': self.tps,
-            'correct_strokes': self.correct_strokes, # ★追加
-            # データベースのタイムスタンプをクライアント表示用に整形
+            'accuracy': self.accuracy,
             'date': self.timestamp.strftime('%Y-%m-%d %H:%M:%S') 
         }
 
-def create_tables_once():
-    # ... (既存のコード) ...
-    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-        with app.app_context():
-            # 既存のテーブルをドロップして新しいスキーマを適用したい場合は以下の2行を有効化
-            # db.drop_all()
-            db.create_all()
-            logging.info("データベーステーブルが作成されたか、すでに存在しています。")
+# ==========================================
+# 🛑 DB初期化
+# ==========================================
+def init_db():
+    retries = 30
+    while retries > 0:
+        try:
+            with app.app_context():
+                # テーブル構造変更時は以下をコメントアウト解除してリセット
+                # db.drop_all()
+                db.create_all()
+                print("✅ データベース接続成功")
+                return 
+        except Exception as e:
+            retries -= 1
+            print(f"⏳ DB接続待機中... {retries}")
+            time.sleep(2)
 
-create_tables_once()
-
-@app.route('/')
+# ==========================================
+# 🛑 ルーティング
+# ==========================================
+@app.route("/")
 def index():
-    """
-    ゲームのメインページを表示します。
-    """
-    return render_template('index.html')
+    if 'user_info' in session:
+        return redirect(url_for('game'))
+    
+    login_uri = f"{CODESPACES_URL}/login/callback"
+    return render_template("index.html", client_id=GOOGLE_CLIENT_ID, domain=ALLOWED_DOMAIN, login_uri=login_uri)
 
+@app.route("/game")
+def game():
+    user = session.get('user_info')
+    if not user:
+        return redirect(url_for('index'))
+    return render_template("anan.html", user=user)
+
+@app.route("/login/callback", methods=['POST'])
+def login_callback():
+    token = request.form.get('credential')
+    try:
+        id_info = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
+        email = id_info['email']
+        domain_hd = id_info.get('hd') 
+
+        # ドメインチェック (簡易版)
+        if domain_hd != ALLOWED_DOMAIN and not email.endswith('@' + ALLOWED_DOMAIN):
+             return f"エラー: @{ALLOWED_DOMAIN} のアカウントのみ許可されています。", 403
+
+        name = id_info.get('name')
+        picture = id_info.get('picture')
+
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            new_user = User(email=email, name=name, picture=picture)
+            db.session.add(new_user)
+            db.session.commit()
+        
+        session['user_info'] = {'email': email, 'name': name, 'picture': picture}
+        return redirect(url_for('game'))
+
+    except ValueError as e:
+        return f"認証エラー: {e}", 400
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
+
+# ==========================================
+# 🛑 API (ランキング)
+# ==========================================
 @app.route('/api/rankings', methods=['GET'])
 def get_rankings():
-    """
-    保存されているランキングデータを取得し、JSON形式で返します。
-    正当文字数で降順、次にTPSで降順、最後に精度で降順にソートし、上位10件を返します。
-    """
     try:
-        # ★修正: 正当文字数 -> TPS -> 精度 の順でソート
-        all_rankings = Ranking.query.order_by(
-            Ranking.correct_strokes.desc(), # 1. 正当文字数 (最優先)
-            Ranking.tps.desc(),             # 2. TPS
-            Ranking.accuracy.desc(),        # 3. 精度
-            Ranking.timestamp.asc()         # 4. 同スコアの場合は登録が古い順
-        ).limit(10).all()
-
-        # オブジェクトのリストを辞書のリストに変換
-        rankings_data = [ranking.to_dict() for ranking in all_rankings]
-        logging.info("ランキングデータが正常に取得されました。")
-        return jsonify(rankings_data), 200
-    except Exception as e:
-        logging.error(f"ランキングの取得中にエラーが発生しました: {e}")
-        return jsonify({"error": "Failed to retrieve rankings"}), 500
-
-@app.route('/api/rankings', methods=['POST'])
-def add_ranking():
-    """
-    新しいランキングデータを追加し、データベースに保存します。
-    """
-    new_score_data = request.json
-    if not new_score_data:
-        logging.warning("ランキング追加リクエスト: データが提供されていません。")
-        return jsonify({"error": "No data provided"}), 400
-
-    # スコアの必須項目と型チェック
-    # ★修正: 'date' を削除し、'correct_strokes' を追加
-    required_fields = {
-        'name': str,
-        'accuracy': (float, int), 
-        'tps': (float, int),
-        'correct_strokes': (float, int), # クライアント側でIntegerとして送信されることを期待
-        # 'date' はクライアント側から受け取る必要はなくなりました
-    }
-
-    for field, expected_type in required_fields.items():
-        if field not in new_score_data:
-            logging.warning(f"ランキング追加リクエスト: 必須フィールド '{field}' が不足しています。")
-            return jsonify({"error": f"Missing required field: {field}"}), 400
-        
-        # 型チェック
-        if not isinstance(new_score_data[field], expected_type):
-            logging.warning(f"ランキング追加リクエスト: フィールド '{field}' の型が不正です。期待される型: {expected_type}, 受け取った型: {type(new_score_data[field])}")
-            return jsonify({"error": f"Invalid type for field '{field}'. Expected {expected_type}, got {type(new_score_data[field])}"}), 400
-
-    # 値の基本的な検証
-    name = new_score_data['name'].strip()
-    if not (1 <= len(name) <= 50): # 名前の長さを制限
-        logging.warning(f"ランキング追加リクエスト: 名前の長さが不正です: '{name}'")
-        return jsonify({"error": "Name must be between 1 and 50 characters"}), 400
-    
-    try:
-        accuracy = float(new_score_data['accuracy'])
-        tps = float(new_score_data['tps'])
-        correct_strokes = int(new_score_data['correct_strokes']) # ★追加
-        
-        # 値の範囲チェック
-        if accuracy < 0 or tps < 0 or correct_strokes < 0:
-            logging.warning(f"ランキング追加リクエスト: スコアが負の値です。accuracy={accuracy}, tps={tps}, correct_strokes={correct_strokes}")
-            return jsonify({"error": "Score values cannot be negative"}), 400
-
-    except (ValueError, TypeError) as e:
-        logging.warning(f"ランキング追加リクエスト: 数値変換エラーまたは不正な値: {e}")
-        return jsonify({"error": f"Invalid data format for score values: {e}"}), 400
-
-
-    try:
-        # 新しいランキングエントリを作成
-        new_ranking = Ranking(
-            name=name,
-            accuracy=accuracy,
-            tps=tps,
-            correct_strokes=correct_strokes, # ★追加
-            # timestampはdefaultで自動設定されます
-        )
-        db.session.add(new_ranking)
-        db.session.commit()
-        logging.info(f"新しいランキングが追加されました: {new_ranking.name}")
-
-        # 追加後、再度ランキングを取得して上位10件を返す
         all_rankings = Ranking.query.order_by(
             Ranking.correct_strokes.desc(),
             Ranking.tps.desc(),
-            Ranking.accuracy.desc()
+            Ranking.accuracy.desc(),
+            Ranking.timestamp.asc()
         ).limit(10).all()
-        updated_rankings_data = [ranking.to_dict() for ranking in all_rankings]
-
-        return jsonify({"message": "Ranking added successfully", "rankings": updated_rankings_data}), 201
-
+        return jsonify([r.to_dict() for r in all_rankings]), 200
     except Exception as e:
-        db.session.rollback() # エラーが発生した場合はロールバック
-        logging.error(f"ランキングの追加中にデータベースエラーが発生しました: {e}")
-        return jsonify({"error": "Failed to add ranking due to database error"}), 500
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/rankings', methods=['POST'])
+def add_ranking():
+    user_info = session.get('user_info')
+    if not user_info:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    email = user_info['email']
+    data = request.json
+    
+    try:
+        new_ranking = Ranking(
+            email=email,
+            accuracy=float(data['accuracy']),
+            tps=float(data['tps']),
+            correct_strokes=int(data['correct_strokes'])
+        )
+        db.session.add(new_ranking)
+        db.session.commit()
+        
+        # 追加後の最新ランキングを返す
+        return get_rankings()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    # Flaskアプリを開発モードで実行
-    # 既存のDBファイルを削除して新しいスキーマで再構築したい場合は、
-    # アプリ実行前に 'site.db' ファイルを削除してください。
-    app.run(debug=True)
+    init_db()
+    app.run(debug=True, host='0.0.0.0', port=5000)

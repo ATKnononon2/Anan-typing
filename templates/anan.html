@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阿南タイピングゲーム</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div style="text-align: right; margin-top: 10px;">
+            <span>ログイン中: {{ user.email }}</span>
+            <a href="/logout" style="margin-left: 10px; color: red;">ログアウト</a>
+        </div>
+
+        <h1>阿南タイピング</h1>
+        <div id="game-area">
+            <div id="timer">残り時間: <span id="clickable-time">60秒</span></div>
+            
+            <div id="target-text"></div>
+            <div id="romaji-display"></div>
+            <div id="typing-input"></div>
+            <button id="start-button">スタート</button>
+            <div id="error-overlay" class="overlay"></div>
+            <div id="typed-text" style="min-height: 1.2em; border-bottom: 2px dashed #007bff; padding: 5px; font-size: 0.0001px;"></div>
+            <div id="miss-display" class="miss-text">MISS!</div>
+            <p id="result"></p>
+        </div>
+
+        <hr>
+
+        <div id="ranking-area">
+            <h2>ランキング</h2>
+            <ol id="rank-list"></ol>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
