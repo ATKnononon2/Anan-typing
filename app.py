@@ -128,37 +128,31 @@ def logout():
 @app.route('/api/rankings', methods=['GET'])
 def get_rankings():
     try:
-        all_rankings = Ranking.query.order_by(
+        # 1. スコアが良い順にデータを「全件」取得する
+        # (limit(10) は外します。フィルタリング前なので全員分見る必要があるため)
+        all_records = Ranking.query.order_by(
             Ranking.correct_strokes.desc(),
             Ranking.tps.desc(),
             Ranking.accuracy.desc(),
             Ranking.timestamp.asc()
-        ).limit(10).all()
-        return jsonify([r.to_dict() for r in all_rankings]), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        ).all()
 
-@app.route('/api/rankings', methods=['POST'])
-def add_ranking():
-    user_info = session.get('user_info')
-    if not user_info:
-        return jsonify({"error": "Unauthorized"}), 401
-    
-    email = user_info['email']
-    data = request.json
-    
-    try:
-        new_ranking = Ranking(
-            email=email,
-            accuracy=float(data['accuracy']),
-            tps=float(data['tps']),
-            correct_strokes=int(data['correct_strokes'])
-        )
-        db.session.add(new_ranking)
-        db.session.commit()
-        
-        # 追加後の最新ランキングを返す
-        return get_rankings()
+        # 2. Python側で「同じメールアドレス」を除外しながらトップ10を作る
+        unique_rankings = []
+        seen_emails = set()  # すでに登録したメールアドレスを記録するセット
+
+        for record in all_records:
+            # もしこのメールアドレスがまだリストになければ追加
+            if record.email not in seen_emails:
+                unique_rankings.append(record.to_dict())
+                seen_emails.add(record.email)
+            
+            # 10人に達したらループを抜ける（これでトップ10完成）
+            if len(unique_rankings) >= 10:
+                break
+
+        return jsonify(unique_rankings), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

@@ -31,29 +31,31 @@ document.addEventListener('DOMContentLoaded', () => {
     let typedRomanBuffer = ''; // 未使用ですが、互換性のために残す
 
     // - 用語の定義
-    const words = [
+        const words = [
         { main: '俺のレベルに着いてこい！', sub: 'おれのれべるについてこい！', inp: 'orenoreberunituitekoi!' },
         { main: '返事は、はいかYESか喜んで。', sub: 'へんじは、はいかYESかよろこんで。', inp: 'henziha,haikaYESkayorokonde.' },
         { main: '阿南は優しいんですよ。', sub: 'あなんはやさしいんですよ。', inp: 'ananhayasasiindesuyo.' },
         { main: '自分の限界に挑戦するのが課題研究だ。', sub: 'じぶんのげんかいにちょうせんするのがかだいけんきゅうだ。', inp: 'zibunnnogenkainichousensurunogakadaikenkyuuda.' },
-        { main: '俺の心は海よりちょっと狭いくらい。', sub: 'おれのこころはうみよりちょっとせまいくらい。', inp: 'orenokokohaumiyorichottosemaikurai.' },
+        { main: '俺の心は海よりちょっと狭いくらい。', sub: 'おれのこころはうみよりちょっとせまいくらい。', inp: 'orenokokorohaumiyorichottosemaikurai.' },
         { main: '俺はダイエット中なんだよ。', sub: 'おれはだいえっとちゅうなんだよ。', inp: 'orehadaiettochuunandayo.' },
         { main: 'ほら、早く帰れ。', sub: 'ほら、はやくかえれ。', inp: 'hora,hayakukaere.' },
         { main: '阿南は怒っています。', sub: 'あなんはおこっています。', inp: 'ananhaokotteimasu.' },
         { main: '俺はIT未来を、こんな学校にしたい。', sub: 'おれはITみらいを、こんながっこうにしたい。', inp: 'orehaITmiraiwo,konnnagakkounisitai.' },
         { main: '阿南先生は絶対なんですよ。', sub: 'あなんせんせいはぜったいなんですよ。', inp: 'anansenseihazettainandesuyo.' },
         { main: '君たちの無限の可能性に期待している。', sub: 'きみたちのむげんのかのうせいにきたいしている。', inp: 'kimitatinomugennnokanouseinikitaisiteiru.' },
-        { main: '数少ない時間の中で、如何に成果を出せるかだ。', sub: 'すくないじかんのなかで、いかにせいかをだせるかだ。', inp: 'sukunaizikannnonakade,ikaniseikawodaserukada.' },
+        { main: '数少ない時間の中で、如何に成果を出せるかだ。', sub: 'かずすくないじかんのなかで、いかにせいかをだせるかだ。', inp: 'kazusukunaizikannnonakade,ikaniseikawodaserukada.' },
         { main: 'ほら、早く帰れ。', sub: 'ほら、はやくかえれ', inp: 'hora,hayakukaere.' },
         { main: 'やるかやらないかだろ、今すぐやれ。', sub: 'やるかやらないかだろ、いますぐやれ。', inp: 'yarukayaranaikadaro,umasuguyare.' },
         { main: '授業中に、スマホを触らない。', sub: 'じゅぎょうちゅうにすまほをさわらない。', inp: 'zyugyouchuuha,sumahowosawaranai' },
-        { main: '', sub: '', inp: '' },
-        { main: '俺は子供が嫌いだ。俺のレベル以下だからだ。俺と対等に話せる人が欲しいから、俺のレベルまで来てくれよ。俺のスピードに着いてこい！', sub: 'おれはこどもがきらいだ。おれのれべるいかだからだ。おれとたいとうにはなせるひとがほしいから、おれのれべるまできてくれよ。おれのすぴーどについてこい！', inp: 'orehakodomogakiraida.orenoreberuikadakarada.oretotaitounihanaseruhitogahosiikara,orenorebemadekitekureyo.orenosupi-donituitekoi!' },
-        { main: '大学までバリバリ体育会系だ。', sub: '', inp: '' },
-        { main: '意見を言うのは簡単です。', sub: '', inp: '' },
-        { main: '行動に移すか、0か1かだ。', sub: '', inp: '' },
-        { main: '死ぬまでは過労じゃない。', sub: '', inp: '' },
-        { main: '忙しい人はいっぱいいます。', sub: '', inp: '' }
+        { main: '俺は子供が嫌いだ。俺のレベル以下だからだ。', sub: 'おれはこどもがきらいだ。おれのれべるいかだからだ。', inp: 'orehakodomogakiraida.' },
+        { main: '大学までバリバリ体育会系だ。', sub: 'だいがくまでばりばりたいいくかいけいだ。', inp: 'daigakumadebaribaritaiikukaikeida.' },
+        { main: '意見を言うのは簡単です。', sub: 'いけんをいうのはかんたんです。', inp: 'ikenwoiunohakantandesu.' },
+        { main: '行動に移すか、0か1かだ。', sub: 'こうどうにうつすか、0か1かだ。', inp: 'koudouniutusuka,0ka1kada.' },
+        { main: '死ぬまでは過労じゃない。', sub: 'しぬまではかろうじゃない。', inp: 'sinumadehakarouzyanai.' },
+        { main: '忙しい人は沢山います。', sub: 'いそがしいひとはたくさんいます。', inp: 'isogasiihitohatakusanimasu.' },
+        { main: '阿南はお金稼ぎがしたいんですよ。', sub: 'あなんはおかねかせぎがしたいんですよ。', inp: 'ananhaokanekasegigasitaindesuyo.' },
+        { main: 'お前は情報テクノロジー大学校へ行け。', sub: 'おまえじょうほうてくのろじーだいがっこうへいけ。', inp: 'omaehazyouhoutekunoroziidaigakkouheike.' }
+        // { main: '', sub: '', inp: '' },
     ];
 
     // - ゲーム初期化処理
@@ -417,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                name: score.name,
+                // ★修正点1: name はサーバー側(Python)でセッションから自動取得するので送信不要
                 accuracy: parseFloat(score.accuracy),
                 tps: parseFloat(score.tps),
                 correct_strokes: score.correct_strokes 
@@ -431,6 +433,10 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(data => {
             console.log('Ranking added successfully:', data);
+            
+            // ★重要: サーバーから最新のランキングリストが返ってきている場合、
+            // それを直接表示関数に渡すと無駄な通信が減らせます。
+            // サーバーの実装次第ですが、ここでは念のため再取得のままにします。
             updateRankingDisplayFromAPI();
         })
         .catch(error => {
@@ -458,10 +464,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             rankings.forEach((rank, index) => {
                 const li = document.createElement('li');
-                li.innerHTML = `<span>${index + 1}.</span> <span>${rank.name}</span> 
-                                <span>正打数: ${rank.correct_strokes}回</span> 
-                                <span>TPS: ${rank.tps}</span> 
-                                <span>正誤率: ${rank.accuracy}%</span>`; 
+                // ★修正点2: rank.name を rank.email に変更
+                // HTMLの表示も見やすく調整（メールアドレス、正打数、TPS、正誤率）
+                li.innerHTML = `
+                    <span style="font-weight:bold;">${index + 1}. ${rank.email}</span><br>
+                    <span style="font-size:0.9em; margin-left: 15px;">
+                        正打数: ${rank.correct_strokes}回 / 
+                        TPS: ${rank.tps} / 
+                        正誤率: ${rank.accuracy}%
+                    </span>`; 
                 rankListElement.appendChild(li);
             });
         })
