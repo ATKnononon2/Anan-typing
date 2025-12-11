@@ -54,6 +54,84 @@ document.addEventListener('DOMContentLoaded', () => {
         { main: '死ぬまでは過労じゃない。', sub: 'しぬまではかろうじゃない。', inp: 'sinumadehakarouzyanai.' },
         { main: '忙しい人は沢山います。', sub: 'いそがしいひとはたくさんいます。', inp: 'isogasiihitohatakusanimasu.' },
         { main: '阿南はお金稼ぎがしたいんですよ。', sub: 'あなんはおかねかせぎがしたいんですよ。', inp: 'ananhaokanekasegigasitaindesuyo.' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
+        { main: '', sub: '', inp: '' },
         { main: 'お前は情報テクノロジー大学校へ行け。', sub: 'おまえじょうほうてくのろじーだいがっこうへいけ。', inp: 'omaehazyouhoutekunoroziidaigakkouheike.' }
         // { main: '', sub: '', inp: '' },
     ];
@@ -368,11 +446,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // - ゲームオーバー処理（時間切れの場合のみランキングに送信）
+    // ゲームオーバー処理
     function gameOver() {
         clearInterval(gameTimerId);
         isGameRunning = false;
-        romajiTargetElement.disabled = true;
+        
+        // もし入力エリアが <input> タグなら以下が必要ですが、
+        // <div>タグでキーイベントを取得している場合は不要なのでコメントアウトしておきます
+        // romajiTargetElement.disabled = true; 
+
         startButton.disabled = false;
         startButton.textContent = 'もう一度プレイ';
         startButton.classList.remove('end-game-button');
@@ -380,9 +462,6 @@ document.addEventListener('DOMContentLoaded', () => {
         startButton.removeEventListener('click', startCountdown);
         startButton.removeEventListener('click', endGameEarly);
         startButton.addEventListener('click', startCountdown);
-
-        messageElement.textContent = 'お疲れ様です。';
-        messageElement.style.color = '#d9534f';
 
         gameEndTime = new Date().getTime();
         const totalGameDuration = (gameEndTime - gameStartTime) / 1000;
@@ -395,14 +474,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         resultElement.textContent = `最終結果: 正答率 ${accuracy}%, TPS ${tps}, 正解タイプ数 ${totalCorrectInput}回`;
         
-        // ランキング送信（時間切れのみ）
-        let playerName = prompt(`お疲れ様です。\n最終結果: 正答率: ${accuracy}% TPS: ${tps} 正解タイプ数: ${totalCorrectInput}回\n名前を入力してください:`);
-        if (!playerName) {
-            playerName = "名無し";
-        }
+        // ユーザーへのメッセージ
+        messageElement.textContent = 'お疲れ様です。データを保存中...';
+        messageElement.style.color = '#d9534f';
 
+        // ★修正済み: prompt（名前入力）を削除し、スコアデータだけを送信
         postRanking({ 
-            name: playerName, 
             accuracy: accuracy, 
             tps: tps, 
             correct_strokes: totalCorrectInput 
