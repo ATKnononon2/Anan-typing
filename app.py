@@ -17,7 +17,7 @@ app.secret_key = 'random_secret_key_for_session'
 # 🛑 設定エリア
 # ==========================================
 GOOGLE_CLIENT_ID = "615786165928-5j6gjs46idi14kgqvcu6r6qkugi9f739.apps.googleusercontent.com"
-CODESPACES_URL = "https://ominous-guacamole-g476wxpvr7pgfwx6r-5000.app.github.dev"
+CODESPACES_URL = "https://squalid-poltergeist-wrgxjv4q5jq6299xg-5000.app.github.dev"
 ALLOWED_DOMAIN = "it-mirai-h.ibk.ed.jp"
 
 # データベース設定
