@@ -1,42 +1,42 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 要素の取得
-    const targetTextElement = document.getElementById('target-text');
-    const hiraganaDisplayElement = document.getElementById('romaji-display');
-    const romajiTargetElement = document.getElementById('typing-input');
-    const startButton = document.getElementById('start-button');
-    const timerElement = document.getElementById('timer');
-    const resultElement = document.getElementById('result');
-    const rankListElement = document.getElementById('rank-list');
+    // - 結果表示要素を取得
+    const targetTextElement = document.getElementById('target-text');       // 漢字表示要素
+    const hiraganaDisplayElement = document.getElementById('romaji-display'); // ひらがな表示要素
+    const romajiTargetElement = document.getElementById('typing-input');     // 色付きローマ字ターゲット要素
+    const startButton = document.getElementById('start-button');             // スタートボタン要素
+    const timerElement = document.getElementById('timer');                   // タイマー表示要素
+    const resultElement = document.getElementById('result');                 // 結果表示要素
+    const rankListElement = document.getElementById('rank-list');            // ランキング表示要素
     
-    // メッセージ要素
-    const messageElement = document.createElement('p');
-    messageElement.id = 'game-message';
+    // メッセージ表示要素の生成と配置
+    const messageElement = document.createElement('p');                    
+    messageElement.id = 'game-message';                                          
     document.getElementById('game-area').insertBefore(messageElement, romajiTargetElement.nextSibling); 
     
-    const errorOverlay = document.getElementById('error-overlay');
-    const missDisplay = document.getElementById('miss-display');
+    const errorOverlay = document.getElementById('error-overlay');           // エラーオーバーレイ要素
+    const missDisplay = document.getElementById('miss-display');             // ミスタイプ数表示要素
 
-    // 変数定義
-    let inputString = '';
-    let totalKeyStrokes = 0;
-    let correctKeyStrokes = 0;
-    let missKeyCount = 0;
-    let gameStartTime = 0;
-    let gameEndTime = 0;
-    let gameTimerId;
-    let countdownTimerId;
-    let timeLeft;
-    let isGameRunning = false;
-    let initialTime = 60;
-    let currentIndex = 0;
+    let inputString = ''; // お題のローマ字文字列（RandomPickで設定される）
+    let totalKeyStrokes = 0; // ゲーム全体での総キータイプ数
+    let correctKeyStrokes = 0; // ゲーム全体での正しく打ったキー数
+    let missKeyCount = 0; // ゲーム全体でのミスタイプ数
+    let gameStartTime = 0; // ゲーム開始時間のタイムスタンプ
+    let gameEndTime = 0; // ゲーム終了時間のタイムスタンプ
+    let gameTimerId; // ゲームタイマーのID
+    let countdownTimerId; // カウントダウンタイマーのID
+    let timeLeft; // 残り時間（秒）
+    let isGameRunning = false; // ゲームが進行中かどうかのフラグ
+    let initialTime = 60; // 初期時間を60秒に設定
+    let currentIndex = 0; // 現在の入力位置
+    let typedRomanBuffer = ''; // 未使用ですが、互換性のために残す
 
-    // お題リスト
+    // - 用語の定義
     const words = [
         { main: '俺のレベルに着いてこい！', sub: 'おれのれべるについてこい！', inp: 'orenoreberunituitekoi!' },
         { main: '返事は、はいかYESか喜んで。', sub: 'へんじは、はいかYESかよろこんで。', inp: 'henziha,haikaYESkayorokonde.' },
         { main: '阿南は優しいんですよ。', sub: 'あなんはやさしいんですよ。', inp: 'ananhayasasiindesuyo.' },
         { main: '自分の限界に挑戦するのが課題研究だ。', sub: 'じぶんのげんかいにちょうせんするのがかだいけんきゅうだ。', inp: 'zibunnnogenkainichousensurunogakadaikenkyuuda.' },
-        { main: '俺の心は海よりちょっと狭いくらい。', sub: 'おれのこころはうみよりちょっとせまいくらい。', inp: 'orenokokorohaumiyorichottosemaikurai.' },
+        { main: '俺の心は海よりちょっと狭いくらい。', sub: 'おれのこころはうみよりちょっとせまいくらい。', inp: 'orenokokohaumiyorichottosemaikurai.' },
         { main: '俺はダイエット中なんだよ。', sub: 'おれはだいえっとちゅうなんだよ。', inp: 'orehadaiettochuunandayo.' },
         { main: 'ほら、早く帰れ。', sub: 'ほら、はやくかえれ。', inp: 'hora,hayakukaere.' },
         { main: '阿南は怒っています。', sub: 'あなんはおこっています。', inp: 'ananhaokotteimasu.' },
@@ -44,23 +44,29 @@ document.addEventListener('DOMContentLoaded', () => {
         { main: '阿南先生は絶対なんですよ。', sub: 'あなんせんせいはぜったいなんですよ。', inp: 'anansenseihazettainandesuyo.' },
         { main: '君たちの無限の可能性に期待している。', sub: 'きみたちのむげんのかのうせいにきたいしている。', inp: 'kimitatinomugennnokanouseinikitaisiteiru.' },
         { main: '数少ない時間の中で、如何に成果を出せるかだ。', sub: 'すくないじかんのなかで、いかにせいかをだせるかだ。', inp: 'sukunaizikannnonakade,ikaniseikawodaserukada.' },
+        { main: 'ほら、早く帰れ。', sub: 'ほら、はやくかえれ', inp: 'hora,hayakukaere.' },
         { main: 'やるかやらないかだろ、今すぐやれ。', sub: 'やるかやらないかだろ、いますぐやれ。', inp: 'yarukayaranaikadaro,umasuguyare.' },
         { main: '授業中に、スマホを触らない。', sub: 'じゅぎょうちゅうにすまほをさわらない。', inp: 'zyugyouchuuha,sumahowosawaranai' },
-        { main: '俺は子供が嫌いだ。俺のレベル以下だからだ。', sub: 'おれはこどもがきらいだ。おれのれべるいかだからだ。', inp: 'orehakodomogakiraida.' },
-        { main: '大学までバリバリ体育会系だ。', sub: 'だいがくまでばりばりたいいくかいけいだ。', inp: 'daigakumadebaribaritaiikukaikeida.' },
-        { main: '意見を言うのは簡単です。', sub: 'いけんをいうのはかんたんです。', inp: 'ikenwoiunohakantandesu.' },
-        { main: '行動に移すか、0か1かだ。', sub: 'こうどうにうつすか、0か1かだ。', inp: 'koudouniutusuka,0ka1kada.' },
-        { main: '死ぬまでは過労じゃない。', sub: 'しぬまではかろうじゃない。', inp: 'sinumadehakarouzyanai.' },
-        { main: '忙しい人は沢山います。', sub: 'いそがしいひとはたくさんいます。', inp: 'isogasiihitohatakusanimasu.' },
-        { main: 'お前は情報テクノロジー大学校へ行け。', sub: 'おまえじょうほうてくのろじーだいがっこうへいけ。', inp: 'omaehazyouhoutekunoroziidaigakkouheike.' }
+        { main: '', sub: '', inp: '' },
+        { main: '俺は子供が嫌いだ。俺のレベル以下だからだ。俺と対等に話せる人が欲しいから、俺のレベルまで来てくれよ。俺のスピードに着いてこい！', sub: 'おれはこどもがきらいだ。おれのれべるいかだからだ。おれとたいとうにはなせるひとがほしいから、おれのれべるまできてくれよ。おれのすぴーどについてこい！', inp: 'orehakodomogakiraida.orenoreberuikadakarada.oretotaitounihanaseruhitogahosiikara,orenorebemadekitekureyo.orenosupi-donituitekoi!' },
+        { main: '大学までバリバリ体育会系だ。', sub: '', inp: '' },
+        { main: '意見を言うのは簡単です。', sub: '', inp: '' },
+        { main: '行動に移すか、0か1かだ。', sub: '', inp: '' },
+        { main: '死ぬまでは過労じゃない。', sub: '', inp: '' },
+        { main: '忙しい人はいっぱいいます。', sub: '', inp: '' }
     ];
 
-    // 初期化
+    // - ゲーム初期化処理
     function initializeGame() {
-        totalKeyStrokes = 0; correctKeyStrokes = 0; missKeyCount = 0; gameStartTime = 0;
-        inputString = ''; currentIndex = 0;
+        totalKeyStrokes = 0;
+        correctKeyStrokes = 0;
+        missKeyCount = 0;
+        gameStartTime = 0;
+        typedRomanBuffer = '';
+        inputString = ''; 
+        currentIndex = 0; 
 
-        missDisplay.textContent = 'ミス: 0';
+        missDisplay.textContent = 'ミス: 0'; 
         timerElement.textContent = `残り時間: ${initialTime}秒`;
         timerElement.classList.remove('countdown');
         startButton.textContent = 'スタート';
@@ -68,58 +74,76 @@ document.addEventListener('DOMContentLoaded', () => {
         startButton.disabled = false;
         targetTextElement.textContent = '阿南先生は絶対なんですよ。';
         hiraganaDisplayElement.textContent = '指示をお待ちください。。。';
+        romajiTargetElement.value = ''; 
         romajiTargetElement.innerHTML = ''; 
+        missDisplay.textContent = 'ミス: 0'; 
 
         startButton.removeEventListener('click', startCountdown);
         startButton.removeEventListener('click', endGameEarly);
         startButton.addEventListener('click', startCountdown);
 
-        updateRankingDisplayFromAPI(); // ランキング表示
+        // ランキングを取得
+        updateRankingDisplayFromAPI(); 
     }
 
-    // お題ランダム選択
+    // - 用語の範囲を指定してランダムに出力
     function RandomPick() {
+        // 存在するお題の数
         const N = words.filter(word => word.main !== '').length; 
         const random = Math.floor(Math.random() * N);
         const value = words[random]; 
         targetTextElement.textContent = value.main;
         hiraganaDisplayElement.textContent = value.sub; 
+        
         inputString = value.inp; 
         currentIndex = 0; 
+        typedRomanBuffer = ''; 
+        romajiTargetElement.value = ''; 
         updateDisplay(); 
     }
 
-    // ミスエフェクト
+    // 入力ミス時のエフェクト表示
     function showMissEffect() {
         errorOverlay.classList.remove('active');
         void errorOverlay.offsetWidth;
         errorOverlay.classList.add('active');
+
         missDisplay.classList.remove('active');
         void missDisplay.offsetWidth;
         missDisplay.classList.add('active');
+
         setTimeout(() => {
             errorOverlay.classList.remove('active');
             missDisplay.classList.remove('active');
         }, 500);
     }
 
-    // カウントダウン
+    // - カウントダウン開始処理
     function startCountdown() {
-        // 変数リセット
-        totalKeyStrokes = 0; correctKeyStrokes = 0; missKeyCount = 0; gameStartTime = 0;
-        inputString = ''; currentIndex = 0; timeLeft = initialTime;
+        // ゲームに必要な変数を初期化
+        totalKeyStrokes = 0;
+        correctKeyStrokes = 0;
+        missKeyCount = 0;
+        gameStartTime = 0;
+        typedRomanBuffer = '';
+        inputString = ''; 
+        currentIndex = 0; 
+        timeLeft = initialTime; // タイマーをリセット
 
         startButton.disabled = true;
+        romajiTargetElement.disabled = true; 
         messageElement.textContent = '準備してください...';
         messageElement.style.color = '#0056b3';
         targetTextElement.textContent = '';
         hiraganaDisplayElement.textContent = ''; 
+        romajiTargetElement.value = ''; 
         romajiTargetElement.innerHTML = ''; 
         resultElement.textContent = '';
         timerElement.classList.add('countdown');
 
         let count = 3;
         timerElement.textContent = count;
+
         countdownTimerId = setInterval(() => {
             count--;
             if (count > 0) {
@@ -135,46 +159,61 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     }
 
-    // ゲーム開始
+    // - ゲーム開始処理
     function startGame() {
         isGameRunning = true;
         startButton.textContent = '終了';
         startButton.classList.add('end-game-button');
         startButton.disabled = false;
         startButton.removeEventListener('click', startCountdown);
+        startButton.removeEventListener('click', endGameEarly);
         startButton.addEventListener('click', endGameEarly);
         
         timerElement.textContent = `残り時間: ${timeLeft}秒`;
-        gameStartTime = new Date().getTime();
+        
+        if (gameStartTime === 0) {
+            gameStartTime = new Date().getTime();
+        }
+        
         RandomPick();
         
-        if (gameTimerId) clearInterval(gameTimerId);
+        if (gameTimerId) {
+            clearInterval(gameTimerId);
+        }
+        
         gameTimerId = setInterval(() => {
             timeLeft--;
             if (timeLeft < 0) timeLeft = 0;
             timerElement.textContent = `残り時間: ${timeLeft}秒`;
             if (timeLeft <= 0) {
-                gameOver(); 
+                gameOver(); // 時間切れの場合はランキングに不送信
             }
         }, 1000);
+        romajiTargetElement.disabled = false; // 入力を有効化
+        romajiTargetElement.focus(); // 入力欄にフォーカス
     }
 
-    // 表示更新
+
+    // 【重要】色の更新を担当する関数
     function updateDisplay() {
         if (!romajiTargetElement) return;
         let newHtml = '';
+        // 現在のターゲットとなるローマ字は inputString に格納されている
         for (let i = 0; i < inputString.length; i++) {
             const char = inputString[i];
             let color = 'black'; 
-            if (i < currentIndex) color = 'green';
-            else if (i === currentIndex) color = 'blue';
+            if (i < currentIndex) {
+                color = 'green'; // 正解済み
+            } else if (i === currentIndex) {
+                color = 'blue';  // 次に打つ文字
+            }
             newHtml += `<span style="color: ${color};">${char}</span>`;
         }
         romajiTargetElement.innerHTML = newHtml;
     }
 
-    // キー入力処理
-     document.addEventListener('keydown', (event) => {
+    // キー入力イベントリスナー（万能入力対応版）
+    document.addEventListener('keydown', (event) => {
         if (!isGameRunning) return; // ゲーム中でない場合は何もしない
 
         // 特殊キーやCtrl/Alt/Metaキーとの組み合わせは無視
@@ -186,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const pressedKey = event.key;
 
         // ▼▼▼▼▼▼▼▼▼▼▼▼ 万能変換ロジック開始 ▼▼▼▼▼▼▼▼▼▼▼▼
-
+        
         // 1. 【先頭文字が変わるパターン】 (ti -> chi, tu -> tsu, hu -> fu など)
         if (currentIndex < inputString.length) {
             const remainingText = inputString.substring(currentIndex);
@@ -254,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 文字キーが押された場合のみ処理
         if (pressedKey.length === 1 || pressedKey === ' ') {
             event.preventDefault(); // デフォルト動作キャンセル
-
+            
             totalKeyStrokes++; // キータイプ数をカウント
 
             const targetChar = inputString[currentIndex];
@@ -287,35 +326,81 @@ document.addEventListener('DOMContentLoaded', () => {
                 missDisplay.textContent = `ミス: ${missKeyCount}`; 
                 showMissEffect();
             }
-
-
-
-
         }
     });
 
-    // ゲームオーバー（スコア送信）
+
+    // - ゲームを早期終了する処理 (ランキング送信をスキップ)
+    function endGameEarly() {
+        if (isGameRunning && confirm('測定を中止しますか？')) {
+            clearInterval(gameTimerId); // タイマーを停止
+            isGameRunning = false;
+            romajiTargetElement.disabled = true;
+
+            // スコア計算
+            gameEndTime = new Date().getTime();
+            const totalGameDuration = (gameEndTime - gameStartTime) / 1000;
+            const scoreCorrectKeyStrokes = correctKeyStrokes;
+            const accuracy = totalKeyStrokes > 0 ? ((scoreCorrectKeyStrokes / totalKeyStrokes) * 100).toFixed(2) : 0;
+            const tps = totalGameDuration > 0 ? (scoreCorrectKeyStrokes / totalGameDuration).toFixed(2) : 0;
+            const totalCorrectInput = scoreCorrectKeyStrokes;
+
+            // 結果表示
+            resultElement.textContent = `最終結果: 正答率 ${accuracy}%, TPS ${tps}, 正解タイプ数 ${totalCorrectInput}回`;
+            messageElement.textContent = '測定を中止しました。';
+            messageElement.style.color = '#d9534f';
+
+            // UIをリセット
+            startButton.disabled = false;
+            startButton.textContent = 'もう一度プレイ';
+            startButton.classList.remove('end-game-button');
+            startButton.removeEventListener('click', startCountdown);
+            startButton.removeEventListener('click', endGameEarly);
+            startButton.addEventListener('click', startCountdown);
+            
+            // ゲーム状態を初期化
+            gameStartTime = 0; 
+            timeLeft = initialTime;
+            timerElement.textContent = `残り時間: ${timeLeft}秒`;
+        }
+    }
+
+
+    // - ゲームオーバー処理（時間切れの場合のみランキングに送信）
     function gameOver() {
         clearInterval(gameTimerId);
         isGameRunning = false;
+        romajiTargetElement.disabled = true;
         startButton.disabled = false;
         startButton.textContent = 'もう一度プレイ';
         startButton.classList.remove('end-game-button');
+
+        startButton.removeEventListener('click', startCountdown);
         startButton.removeEventListener('click', endGameEarly);
         startButton.addEventListener('click', startCountdown);
 
+        messageElement.textContent = 'お疲れ様です。';
+        messageElement.style.color = '#d9534f';
+
         gameEndTime = new Date().getTime();
         const totalGameDuration = (gameEndTime - gameStartTime) / 1000;
+        
+        // スコア計算
         const scoreCorrectKeyStrokes = correctKeyStrokes;
         const accuracy = totalKeyStrokes > 0 ? ((scoreCorrectKeyStrokes / totalKeyStrokes) * 100).toFixed(2) : 0;
         const tps = totalGameDuration > 0 ? (scoreCorrectKeyStrokes / totalGameDuration).toFixed(2) : 0;
         const totalCorrectInput = scoreCorrectKeyStrokes;
 
         resultElement.textContent = `最終結果: 正答率 ${accuracy}%, TPS ${tps}, 正解タイプ数 ${totalCorrectInput}回`;
-        messageElement.textContent = 'お疲れ様です。データを保存中...';
+        
+        // ランキング送信（時間切れのみ）
+        let playerName = prompt(`お疲れ様です。\n最終結果: 正答率: ${accuracy}% TPS: ${tps} 正解タイプ数: ${totalCorrectInput}回\n名前を入力してください:`);
+        if (!playerName) {
+            playerName = "名無し";
+        }
 
-        // ★修正点: 名前入力(prompt)を廃止し、セッション認証で送信
         postRanking({ 
+            name: playerName, 
             accuracy: accuracy, 
             tps: tps, 
             correct_strokes: totalCorrectInput 
@@ -324,70 +409,65 @@ document.addEventListener('DOMContentLoaded', () => {
         gameStartTime = 0; 
     }
 
-    // ランキング送信
+    // - ランキングデータをバックエンドに送信する関数
     function postRanking(score) {
         fetch('/api/rankings', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+            },
             body: JSON.stringify({
-                // nameはサーバー側で自動取得するため不要
+                name: score.name,
                 accuracy: parseFloat(score.accuracy),
                 tps: parseFloat(score.tps),
                 correct_strokes: score.correct_strokes 
             })
         })
         .then(response => {
-            if (!response.ok) throw new Error(response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             return response.json();
         })
         .then(data => {
-            console.log('Saved:', data);
-            messageElement.textContent = 'ランキングに保存されました！';
-            
-            // ★APIから返ってきた最新データを表示に使用（ここが重要）
-            // data.rankings に最新のリストが入っている仕様にしています
-            if (data.rankings) {
-                renderRankingList(data.rankings);
-            } else {
-                updateRankingDisplayFromAPI();
-            }
+            console.log('Ranking added successfully:', data);
+            updateRankingDisplayFromAPI();
         })
         .catch(error => {
-            console.error('Error:', error);
-            messageElement.textContent = '保存に失敗しました(ログイン切れの可能性があります)';
+            console.error('Error adding ranking:', error);
+            messageElement.textContent = 'ランキングの保存に失敗しました。';
+            messageElement.style.color = 'red';
         });
     }
 
-    // ランキング取得
+    // - APIからランキングを取得し表示する関数
     function updateRankingDisplayFromAPI() {
+        rankListElement.innerHTML = '<li>ランキングを読み込み中...</li>';
         fetch('/api/rankings')
-        .then(res => res.json())
-        .then(rankings => {
-            renderRankingList(rankings);
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
         })
-        .catch(err => {
-            rankListElement.innerHTML = '<li>読み込みエラー</li>';
-        });
-    }
-
-    // ランキング描画 (メールアドレス・正打数・TPS・正誤率)
-    function renderRankingList(rankings) {
-        rankListElement.innerHTML = '';
-        if (!rankings || rankings.length === 0) {
-            rankListElement.innerHTML = '<li>データなし</li>';
-            return;
-        }
-        rankings.forEach((rank, index) => {
-            const li = document.createElement('li');
-            // ★指定通りのフォーマット: メールアドレス、正打数、TPS、正誤率
-            li.innerHTML = `
-                <span style="font-weight:bold;">${index + 1}. ${rank.email}</span><br>
-                <span style="font-size:0.9em; margin-left: 15px;">
-                    正打数: ${rank.correct_strokes}回 / 
-                    TPS: ${rank.tps} / 
-                    正誤率: ${rank.accuracy}%
-                </span>`;
-            rankListElement.appendChild(li);
+        .then(rankings => {
+            rankListElement.innerHTML = '';
+            if (rankings.length === 0) {
+                rankListElement.innerHTML = '<li>まだランキングはありません。</li>';
+                return;
+            }
+            rankings.forEach((rank, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${index + 1}.</span> <span>${rank.name}</span> 
+                                <span>正打数: ${rank.correct_strokes}回</span> 
+                                <span>TPS: ${rank.tps}</span> 
+                                <span>正誤率: ${rank.accuracy}%</span>`; 
+                rankListElement.appendChild(li);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching rankings:', error);
+            rankListElement.innerHTML = '<li>ランキングの取得に失敗しました。</li>';
         });
     }
 
