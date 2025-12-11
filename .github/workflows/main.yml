@@ -1,0 +1,68 @@
+name: Flask MySQL App CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    # MySQLサービスコンテナの設定
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          # GitHub Secretsに設定したパスワードを使用
+          MYSQL_ROOT_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          MYSQL_DATABASE: test_db
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      # 1. コードを取得
+      - uses: actions/checkout@v4
+      
+      # 2. Python環境を作成
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # 3. ライブラリをインストール
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # 4. アプリケーションの動作テスト
+      - name: Run Database Connection Test
+        env:
+          # ここでGitHub Actions用の接続先情報を環境変数として渡す
+          # localhost:3306 は、上のservicesで起動したMySQLコンテナを指します
+          DB_URI: mysql+pymysql://root:${{ secrets.DB_PASSWORD }}@127.0.0.1/test_db
+        run: |
+          # app.py を読み込んで、データベース接続とテーブル作成ができるかテストします
+          python -c "
+          import os
+          
+          # 環境変数をセット（app.pyがこれを読み取ります）
+          os.environ['SQLALCHEMY_DATABASE_URI'] = '${DB_URI}'
+          
+          try:
+              from app import app, db
+              print('✅ app.py のインポートに成功')
+              
+              with app.app_context():
+                  db.create_all()
+                  print('✅ データベース接続とテーブル作成に成功！GitHub上で動作しています。')
+                  
+          except Exception as e:
+              print(f'❌ エラーが発生しました: {e}')
+              exit(1)
+          "
