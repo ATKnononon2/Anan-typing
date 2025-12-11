@@ -174,53 +174,125 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // キー入力処理
-    document.addEventListener('keydown', (event) => {
-        if (!isGameRunning) return;
-        if (event.key.length > 1 && event.key !== ' ') return;
+     document.addEventListener('keydown', (event) => {
+        if (!isGameRunning) return; // ゲーム中でない場合は何もしない
 
+        // 特殊キーやCtrl/Alt/Metaキーとの組み合わせは無視
+        if (event.key.length > 1 && event.key !== ' ' && !event.ctrlKey && !event.altKey && !event.metaKey) {
+            return; 
+        }
+
+        // 入力キーを取得
         const pressedKey = event.key;
-        
-        // --- 簡易変換ロジック (省略版) ---
-        // ※ 必要に応じて、元の詳細な変換ロジックをここに戻してください
-        // -----------------------------
 
-        totalKeyStrokes++;
-        const targetChar = inputString[currentIndex];
+        // ▼▼▼▼▼▼▼▼▼▼▼▼ 万能変換ロジック開始 ▼▼▼▼▼▼▼▼▼▼▼▼
 
-        if (pressedKey === targetChar) {
-            correctKeyStrokes++; 
-            currentIndex++; 
-            updateDisplay();
+        // 1. 【先頭文字が変わるパターン】 (ti -> chi, tu -> tsu, hu -> fu など)
+        if (currentIndex < inputString.length) {
+            const remainingText = inputString.substring(currentIndex);
             
-            if (currentIndex >= inputString.length) {
-                messageElement.style.color = '#28a745';
-                setTimeout(() => {
-                    messageElement.textContent = '';
-                    RandomPick();
-                }, 50); 
+            // 変換リスト (主要なヘボン式・訓令式の違いを網羅)
+            const conversions = [
+                { main: 'ti',  alt: 'chi' },
+                { main: 'tu',  alt: 'tsu' },
+                { main: 'hu',  alt: 'fu' },
+                { main: 'zi',  alt: 'ji' },
+                { main: 'ka',  alt: 'ca' }, { main: 'ku',  alt: 'cu' }, { main: 'ko',  alt: 'co' },
+                { main: 'se',  alt: 'ce' },
+                // 拗音
+                { main: 'tya', alt: 'cha' }, { main: 'tyu', alt: 'chu' }, { main: 'tyo', alt: 'cho' },
+                { main: 'zya', alt: 'ja' },  { main: 'zyu', alt: 'ju' },  { main: 'zyo', alt: 'jo' },
+                { main: 'jya', alt: 'ja' },  { main: 'jyu', alt: 'ju' },  { main: 'jyo', alt: 'jo' }
+            ];
+
+            for (const conv of conversions) {
+                // お題が main で始まり、ユーザーが alt の1文字目を打った場合 → alt に置換
+                if (remainingText.startsWith(conv.main) && pressedKey === conv.alt[0]) {
+                    inputString = inputString.substring(0, currentIndex) + conv.alt + inputString.substring(currentIndex + conv.main.length);
+                    updateDisplay();
+                    break;
+                }
+                // お題が alt で始まり、ユーザーが main の1文字目を打った場合 → main に置換
+                if (remainingText.startsWith(conv.alt) && pressedKey === conv.main[0]) {
+                    inputString = inputString.substring(0, currentIndex) + conv.main + inputString.substring(currentIndex + conv.alt.length);
+                    updateDisplay();
+                    break;
+                }
             }
-        } else { 
-            missKeyCount++; 
-            missDisplay.textContent = `ミス: ${missKeyCount}`; 
-            showMissEffect();
+        }
+
+        // 2. 【2文字目以降で分岐するパターン】 (si -> shi, sha -> sya など)
+        if (currentIndex > 0 && currentIndex < inputString.length) {
+            const remainingText = inputString.substring(currentIndex);
+            const prevChar = inputString[currentIndex - 1]; // すでに打った1文字前の文字
+
+            // 's' を打った直後の分岐処理
+            if (prevChar === 's') {
+                if (remainingText.startsWith('i') && pressedKey === 'h') {
+                    // si -> shi
+                    inputString = inputString.substring(0, currentIndex) + 'hi' + inputString.substring(currentIndex + 1);
+                    updateDisplay();
+                } else if (remainingText.startsWith('hi') && pressedKey === 'i') {
+                    // shi -> si
+                    inputString = inputString.substring(0, currentIndex) + 'i' + inputString.substring(currentIndex + 2);
+                    updateDisplay();
+                } else if (remainingText.startsWith('ya') && pressedKey === 'h') {
+                    // sya -> sha
+                    inputString = inputString.substring(0, currentIndex) + 'ha' + inputString.substring(currentIndex + 2);
+                    updateDisplay();
+                } else if (remainingText.startsWith('ha') && pressedKey === 'y') {
+                    // sha -> sya
+                    inputString = inputString.substring(0, currentIndex) + 'ya' + inputString.substring(currentIndex + 2);
+                    updateDisplay();
+                }
+            }
+            // 't' を打った直後の分岐処理 (tiが解決済みなので、ここでは tya <-> tcha などの特殊ケース用だが、基本は先頭変換でカバー可能)
+        }
+        // ▲▲▲▲▲▲▲▲▲▲▲▲ 万能変換ロジック終了 ▲▲▲▲▲▲▲▲▲▲▲▲
+
+        
+        // 文字キーが押された場合のみ処理
+        if (pressedKey.length === 1 || pressedKey === ' ') {
+            event.preventDefault(); // デフォルト動作キャンセル
+
+            totalKeyStrokes++; // キータイプ数をカウント
+
+            const targetChar = inputString[currentIndex];
+
+            if (pressedKey === targetChar) {
+                // 正解
+                correctKeyStrokes++; 
+                currentIndex++; 
+                
+                // 入力欄に値を保持（内部的な互換性のため）
+                romajiTargetElement.value += pressedKey; 
+                
+                // 色の更新
+                updateDisplay();
+                
+                // お題をクリアしたかチェック
+                if (currentIndex >= inputString.length) {
+                    messageElement.style.color = '#28a745';
+                    
+                    // 次のお題を表示する前に少し待つ
+                    setTimeout(() => {
+                        messageElement.textContent = '';
+                        RandomPick(); // 次のお題を表示
+                        romajiTargetElement.value = ''; 
+                    }, 50); 
+                }
+            } else { 
+                // 不正解
+                missKeyCount++; 
+                missDisplay.textContent = `ミス: ${missKeyCount}`; 
+                showMissEffect();
+            }
+
+
+
+
         }
     });
-
-    // 途中終了
-    function endGameEarly() {
-        if (isGameRunning && confirm('測定を中止しますか？')) {
-            clearInterval(gameTimerId);
-            isGameRunning = false;
-            gameEndTime = new Date().getTime();
-            
-            // UIリセット
-            resultElement.textContent = `測定中止`;
-            startButton.textContent = 'もう一度プレイ';
-            startButton.classList.remove('end-game-button');
-            startButton.removeEventListener('click', endGameEarly);
-            startButton.addEventListener('click', startCountdown);
-        }
-    }
 
     // ゲームオーバー（スコア送信）
     function gameOver() {
