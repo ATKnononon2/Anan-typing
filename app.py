@@ -116,7 +116,7 @@ def game():
     user = session.get('user_info')
     if not user:
         return redirect(url_for('index'))
-    return render_template("Student.html", user=user)
+    return render_template("Students.html", user=user)
 
 @app.route("/Anan-Only")
 def Anan_page():
@@ -145,23 +145,42 @@ def login_callback():
     token = request.form.get('credential')
     try:
         id_info = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
-        email = id_info['email']
+        
+        # ★修正1: 空白除去(.strip) と 小文字化(.lower) で表記ゆれを防止
+        email = id_info['email'].strip().lower()
         domain_hd = id_info.get('hd') 
+
+        # --- デバッグ用ログ出力（ターミナルを見てください） ---
+        print(f"★判定ログ: アクセスアドレス -> {email}")
+        print(f"★判定ログ: 許可リスト中身 -> {ALLOWED_EMAILS}")
+        # --------------------------------------------------
 
         is_allowed = False
 
-        if email in ALLOWED_EMAILS:
+        # 【チェック1】個別に許可されたメールアドレスリストに入っているか？
+        # ★修正2: リスト側も小文字にして比較する（念の為）
+        allowed_emails_lower = [e.strip().lower() for e in ALLOWED_EMAILS]
+        
+        if email in allowed_emails_lower:
+            print("★判定ログ: 個別メールリストで許可されました")
             is_allowed = True
+            
+        # 【チェック2】許可されたドメイン（組織）に所属しているか？
         elif domain_hd in ALLOWED_DOMAINS:
+            print("★判定ログ: 組織ドメイン(hd)で許可されました")
             is_allowed = True
+            
+        # 【チェック3】ドメイン情報(hd)がない場合、メアドの末尾が許可ドメインか？
         else:
             for domain in ALLOWED_DOMAINS:
                 if email.endswith('@' + domain):
+                    print(f"★判定ログ: ドメイン末尾(@{domain})で許可されました")
                     is_allowed = True
                     break
         
         if not is_allowed:
-             return f"エラー: このアカウント({email})は許可されていません。", 403
+             print("★判定ログ: 拒否されました")
+             return f"エラー: このアカウント({email})は許可されていません。管理者にお問い合わせください。", 403
 
         name = id_info.get('name')
         picture = id_info.get('picture')
@@ -174,10 +193,10 @@ def login_callback():
         
         session['user_info'] = {'email': email, 'name': name, 'picture': picture}
         
-        # ★修正: ここも url_for('game') に変更
         return redirect(url_for('game'))
 
     except ValueError as e:
+        print(f"★認証エラー発生: {e}")
         return f"認証エラー: {e}", 400
 
 @app.route("/logout")
