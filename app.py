@@ -11,14 +11,42 @@ from google.auth.transport import requests
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = Flask(__name__)
-app.secret_key = 'random_secret_key_for_session'
+# ★セキュリティ対策: 環境変数があればそれを使い、なければランダム生成
+import secrets
+app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(16))
 
 # ==========================================
 # 🛑 設定エリア
 # ==========================================
-GOOGLE_CLIENT_ID = "615786165928-5j6gjs46idi14kgqvcu6r6qkugi9f739.apps.googleusercontent.com" #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
+GOOGLE_CLIENT_ID = "615786165928-5j6gjs46idi14kgqvcu6r6qkugi9f739.apps.googleusercontent.com"
 CODESPACES_URL = "https://squalid-poltergeist-wrgxjv4q5jq6299xg-5000.app.github.dev"
-ALLOWED_DOMAIN = "it-mirai-h.ibk.ed.jp"
+
+ALLOWED_DOMAINS = [
+    "it-mirai-h.ibk.ed.jp",
+    "mail.ibk.ed.jp",
+    "blue.ibk.ed.jp",
+    "green.ibk.ed.jp",
+    "yellow.ibk.ed.jp",
+    "post.ibk.ed.jp"
+]
+
+ALLOWED_EMAILS = [
+    "amtptjx@gmail.com"
+]
+
+# ==========================================
+# 🛑 ded.html 専用の許可リスト
+# ==========================================
+KEY_ALLOWED_EMAILS = [
+    "amtptjx@gmail.com"
+]
+KEY_ALLOWED_SUFFIXES = [
+    "mail.ibk.ed.jp",
+    "blue.ibk.ed.jp",
+    "green.ibk.ed.jp",
+    "yellow.ibk.ed.jp",
+    "post.ibk.ed.jp"
+]
 
 # データベース設定
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
@@ -39,10 +67,10 @@ class User(db.Model):
 
 class Ranking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), nullable=False)   # メールアドレス
-    accuracy = db.Column(db.Float, nullable=False)      # 正誤率
-    tps = db.Column(db.Float, nullable=False)           # TPS
-    correct_strokes = db.Column(db.Integer, nullable=False) # 正打数
+    email = db.Column(db.String(120), nullable=False)
+    accuracy = db.Column(db.Float, nullable=False)
+    tps = db.Column(db.Float, nullable=False)
+    correct_strokes = db.Column(db.Integer, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
     def to_dict(self):
@@ -62,8 +90,6 @@ def init_db():
     while retries > 0:
         try:
             with app.app_context():
-                # テーブル構造変更時は以下をコメントアウト解除してリセット
-                # db.drop_all()
                 db.create_all()
                 print("✅ データベース接続成功")
                 return 
@@ -78,17 +104,41 @@ def init_db():
 @app.route("/")
 def index():
     if 'user_info' in session:
+        # ★修正: url_forには「関数名(game)」を指定します
         return redirect(url_for('game'))
     
     login_uri = f"{CODESPACES_URL}/login/callback"
-    return render_template("index.html", client_id=GOOGLE_CLIENT_ID, domain=ALLOWED_DOMAIN, login_uri=login_uri)
+    # ★修正: ALLOWED_DOMAIN ではなく ALLOWED_DOMAINS を渡します（または削除してもOK）
+    return render_template("AnanIndex.html", client_id=GOOGLE_CLIENT_ID, domain=ALLOWED_DOMAINS, login_uri=login_uri)
 
-@app.route("/game")
+@app.route("/Anan-Typing")
 def game():
     user = session.get('user_info')
     if not user:
         return redirect(url_for('index'))
-    return render_template("anan.html", user=user)
+    return render_template("Student.html", user=user)
+
+@app.route("/Anan-Only")
+def Anan_page():
+    user = session.get('user_info')
+    if not user:
+        return redirect(url_for('index'))
+
+    email = user['email']
+    is_allowed = False
+
+    if email in KEY_ALLOWED_EMAILS:
+        is_allowed = True
+    else:
+        for suffix in KEY_ALLOWED_SUFFIXES:
+            if email.endswith(suffix):
+                is_allowed = True
+                break
+
+    if is_allowed:
+        return render_template("Teaches.html", user=user)
+    else:
+        return "このページにアクセスする権限がありません。", 403
 
 @app.route("/login/callback", methods=['POST'])
 def login_callback():
@@ -98,9 +148,20 @@ def login_callback():
         email = id_info['email']
         domain_hd = id_info.get('hd') 
 
-        # ドメインチェック (簡易版)
-        if domain_hd != ALLOWED_DOMAIN and not email.endswith('@' + ALLOWED_DOMAIN):
-             return f"エラー: @{ALLOWED_DOMAIN} のアカウントのみ許可されています。", 403
+        is_allowed = False
+
+        if email in ALLOWED_EMAILS:
+            is_allowed = True
+        elif domain_hd in ALLOWED_DOMAINS:
+            is_allowed = True
+        else:
+            for domain in ALLOWED_DOMAINS:
+                if email.endswith('@' + domain):
+                    is_allowed = True
+                    break
+        
+        if not is_allowed:
+             return f"エラー: このアカウント({email})は許可されていません。", 403
 
         name = id_info.get('name')
         picture = id_info.get('picture')
@@ -112,6 +173,8 @@ def login_callback():
             db.session.commit()
         
         session['user_info'] = {'email': email, 'name': name, 'picture': picture}
+        
+        # ★修正: ここも url_for('game') に変更
         return redirect(url_for('game'))
 
     except ValueError as e:
@@ -128,8 +191,6 @@ def logout():
 @app.route('/api/rankings', methods=['GET'])
 def get_rankings():
     try:
-        # 1. スコアが良い順にデータを「全件」取得する
-        # (limit(10) は外します。フィルタリング前なので全員分見る必要があるため)
         all_records = Ranking.query.order_by(
             Ranking.correct_strokes.desc(),
             Ranking.tps.desc(),
@@ -137,17 +198,14 @@ def get_rankings():
             Ranking.timestamp.asc()
         ).all()
 
-        # 2. Python側で「同じメールアドレス」を除外しながらトップ10を作る
         unique_rankings = []
-        seen_emails = set()  # すでに登録したメールアドレスを記録するセット
+        seen_emails = set()
 
         for record in all_records:
-            # もしこのメールアドレスがまだリストになければ追加
             if record.email not in seen_emails:
                 unique_rankings.append(record.to_dict())
                 seen_emails.add(record.email)
             
-            # 10人に達したらループを抜ける（これでトップ10完成）
             if len(unique_rankings) >= 10:
                 break
 
@@ -158,33 +216,27 @@ def get_rankings():
 
 @app.route('/api/rankings', methods=['POST'])
 def add_ranking():
-    # ログインしていない場合は保存させない
     user_info = session.get('user_info')
     if not user_info:
         return jsonify({"error": "ログインが必要です"}), 401
 
     try:
-        # JavaScriptから送られてきたJSONデータを取得
         data = request.json
-        
-        # データベースに保存するデータを作成
-        # emailはセッション(ログイン情報)から自動で取得するので安全
         new_ranking = Ranking(
             email=user_info['email'],
             accuracy=data['accuracy'],
             tps=data['tps'],
             correct_strokes=data['correct_strokes']
         )
-
         db.session.add(new_ranking)
         db.session.commit()
-
         return jsonify({"message": "ランキング保存成功", "data": new_ranking.to_dict()}), 201
-
     except Exception as e:
-        print(f"Error: {e}") # ターミナルにエラーを表示
+        print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # 本番運用時は debug=False にしましょう
+    is_debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(debug=is_debug, host='0.0.0.0', port=5000)

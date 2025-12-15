@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { main: '忙しい人は沢山います。', sub: 'いそがしいひとはたくさんいます。', inp: 'isogasiihitohatakusanimasu.' },
         { main: '阿南はお金稼ぎがしたいんですよ。', sub: 'あなんはおかねかせぎがしたいんですよ。', inp: 'ananhaokanekasegigasitaindesuyo.' },
         { main: 'とっくに、下校時間は過ぎてるぞ。', sub: 'とっくに、げこうじかんはすぎてるぞ。', inp: 'tokkuni,kaeruzikanhasugiteruzo.' },
-        { main: '', sub: '', inp: '' },
+        { main: '俺よりも年齢がちょっと下の人。', sub: '', inp: '' },
         { main: '', sub: '', inp: '' },
         { main: '', sub: '', inp: '' },
         { main: '', sub: '', inp: '' },
