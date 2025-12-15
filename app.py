@@ -156,6 +156,35 @@ def get_rankings():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/rankings', methods=['POST'])
+def add_ranking():
+    # ログインしていない場合は保存させない
+    user_info = session.get('user_info')
+    if not user_info:
+        return jsonify({"error": "ログインが必要です"}), 401
+
+    try:
+        # JavaScriptから送られてきたJSONデータを取得
+        data = request.json
+        
+        # データベースに保存するデータを作成
+        # emailはセッション(ログイン情報)から自動で取得するので安全
+        new_ranking = Ranking(
+            email=user_info['email'],
+            accuracy=data['accuracy'],
+            tps=data['tps'],
+            correct_strokes=data['correct_strokes']
+        )
+
+        db.session.add(new_ranking)
+        db.session.commit()
+
+        return jsonify({"message": "ランキング保存成功", "data": new_ranking.to_dict()}), 201
+
+    except Exception as e:
+        print(f"Error: {e}") # ターミナルにエラーを表示
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True, host='0.0.0.0', port=5000)
