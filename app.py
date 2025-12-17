@@ -2,6 +2,7 @@ import os
 import time
 import datetime
 import logging
+import secrets  # 追加
 from flask import Flask, render_template, request, redirect, session, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from google.oauth2 import id_token
@@ -12,7 +13,6 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 app = Flask(__name__)
 # ★セキュリティ対策: 環境変数があればそれを使い、なければランダム生成
-import secrets
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(16))
 
 # ==========================================
@@ -21,6 +21,7 @@ app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(16))
 GOOGLE_CLIENT_ID = "615786165928-5j6gjs46idi14kgqvcu6r6qkugi9f739.apps.googleusercontent.com"
 CODESPACES_URL = "https://squalid-poltergeist-wrgxjv4q5jq6299xg-5000.app.github.dev"
 
+# ログイン自体を許可するドメイン/アドレス
 ALLOWED_DOMAINS = [
     "it-mirai-h.ibk.ed.jp",
     "mail.ibk.ed.jp",
@@ -35,8 +36,9 @@ ALLOWED_EMAILS = [
 ]
 
 # ==========================================
-# 🛑 ded.html 専用の許可リスト
+# 🛑 管理者・先生 (Teaches.html) 用の許可リスト
 # ==========================================
+# ここに含まれるメールアドレス、またはドメインを持つ人は /Anan-Only に飛ばします
 KEY_ALLOWED_EMAILS = [
     "amtptjx@gmail.com"
 ]
@@ -103,12 +105,25 @@ def init_db():
 # ==========================================
 @app.route("/")
 def index():
+    # 既にログイン済みなら、適切なページへ飛ばす
     if 'user_info' in session:
-        # ★修正: url_forには「関数名(game)」を指定します
-        return redirect(url_for('game'))
+        email = session['user_info']['email']
+        # ここでも権限チェックをして振り分けるのがベスト
+        is_teacher = False
+        if email in KEY_ALLOWED_EMAILS:
+            is_teacher = True
+        else:
+            for suffix in KEY_ALLOWED_SUFFIXES:
+                if email.endswith(suffix):
+                    is_teacher = True
+                    break
+        
+        if is_teacher:
+            return redirect(url_for('Anan_page'))
+        else:
+            return redirect(url_for('game'))
     
     login_uri = f"{CODESPACES_URL}/login/callback"
-    # ★修正: ALLOWED_DOMAIN ではなく ALLOWED_DOMAINS を渡します（または削除してもOK）
     return render_template("AnanIndex.html", client_id=GOOGLE_CLIENT_ID, domain=ALLOWED_DOMAINS, login_uri=login_uri)
 
 @app.route("/Anan-Typing")
@@ -138,6 +153,7 @@ def Anan_page():
     if is_allowed:
         return render_template("Teaches.html", user=user)
     else:
+        # 権限がないのにアクセスした場合のエラー処理
         return "このページにアクセスする権限がありません。", 403
 
 @app.route("/login/callback", methods=['POST'])
@@ -146,42 +162,35 @@ def login_callback():
     try:
         id_info = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
         
-        # ★修正1: 空白除去(.strip) と 小文字化(.lower) で表記ゆれを防止
+        # 表記ゆれ防止
         email = id_info['email'].strip().lower()
         domain_hd = id_info.get('hd') 
 
-        # --- デバッグ用ログ出力（ターミナルを見てください） ---
+        # --- ログ出力 ---
         print(f"★判定ログ: アクセスアドレス -> {email}")
-        print(f"★判定ログ: 許可リスト中身 -> {ALLOWED_EMAILS}")
-        # --------------------------------------------------
-
-        is_allowed = False
-
-        # 【チェック1】個別に許可されたメールアドレスリストに入っているか？
-        # ★修正2: リスト側も小文字にして比較する（念の為）
+        
+        # --- ログイン許可判定 ---
+        is_allowed_login = False
         allowed_emails_lower = [e.strip().lower() for e in ALLOWED_EMAILS]
         
+        # 1. 個別メール許可
         if email in allowed_emails_lower:
-            print("★判定ログ: 個別メールリストで許可されました")
-            is_allowed = True
-            
-        # 【チェック2】許可されたドメイン（組織）に所属しているか？
+            is_allowed_login = True
+        # 2. 組織ドメイン(hd)許可
         elif domain_hd in ALLOWED_DOMAINS:
-            print("★判定ログ: 組織ドメイン(hd)で許可されました")
-            is_allowed = True
-            
-        # 【チェック3】ドメイン情報(hd)がない場合、メアドの末尾が許可ドメインか？
+            is_allowed_login = True
+        # 3. メールアドレス末尾許可
         else:
             for domain in ALLOWED_DOMAINS:
                 if email.endswith('@' + domain):
-                    print(f"★判定ログ: ドメイン末尾(@{domain})で許可されました")
-                    is_allowed = True
+                    is_allowed_login = True
                     break
         
-        if not is_allowed:
-             print("★判定ログ: 拒否されました")
+        if not is_allowed_login:
+             print("★判定ログ: ログイン拒否されました")
              return f"エラー: このアカウント({email})は許可されていません。管理者にお問い合わせください。", 403
 
+        # ユーザー情報の保存・更新
         name = id_info.get('name')
         picture = id_info.get('picture')
 
@@ -193,7 +202,28 @@ def login_callback():
         
         session['user_info'] = {'email': email, 'name': name, 'picture': picture}
         
-        return redirect(url_for('game'))
+        # =================================================
+        # ★ここが修正ポイント: ユーザー権限による振り分け
+        # =================================================
+        is_teacher = False
+
+        # 1. 先生リストに含まれているか
+        if email in KEY_ALLOWED_EMAILS:
+            is_teacher = True
+        else:
+            # 2. 先生用ドメイン(suffix)に含まれているか
+            for suffix in KEY_ALLOWED_SUFFIXES:
+                if email.endswith(suffix):
+                    is_teacher = True
+                    break
+        
+        if is_teacher:
+            print(f"★振分ログ: {email} -> Teaches.html")
+            return redirect(url_for('Anan_page'))
+        else:
+            print(f"★振分ログ: {email} -> Students.html")
+            return redirect(url_for('game'))
+        # =================================================
 
     except ValueError as e:
         print(f"★認証エラー発生: {e}")
@@ -210,7 +240,7 @@ def logout():
 @app.route('/api/rankings', methods=['GET'])
 def get_rankings():
     try:
-        # 1. データを全取得してソート
+        # 1. 全取得してソート
         all_records = Ranking.query.order_by(
             Ranking.correct_strokes.desc(),
             Ranking.tps.desc(),
@@ -221,13 +251,13 @@ def get_rankings():
         unique_rankings = []
         seen_emails = set()
 
-        # 2. 重複を除外してリストを作成（※ここでは人数制限せず全員分作る）
+        # 2. 重複除外
         for record in all_records:
             if record.email not in seen_emails:
                 unique_rankings.append(record.to_dict())
                 seen_emails.add(record.email)
         
-        # 3. 自分の順位を探す（全員分の中から探すので正確）
+        # 3. 自分の順位検索
         user_info = session.get('user_info')
         my_rank_data = None
         
@@ -239,10 +269,9 @@ def get_rankings():
                     my_rank_data['rank'] = index + 1
                     break
 
-        # 4. JSONを返す際に、リストを「トップ300」に切り取る
-        # pythonのリストスライス [:300] を使います
+        # 4. トップ300まで返却
         return jsonify({
-            "ranking_list": unique_rankings[:300], # ★ここを300に変更
+            "ranking_list": unique_rankings[:300],
             "my_rank": my_rank_data
         }), 200
 
@@ -272,6 +301,5 @@ def add_ranking():
 
 if __name__ == '__main__':
     init_db()
-    # 本番運用時は debug=False にしましょう
     is_debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
     app.run(debug=is_debug, host='0.0.0.0', port=5000)
