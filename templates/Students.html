@@ -25,14 +25,40 @@
             <div id="typed-text" style="min-height: 1.2em; border-bottom: 2px dashed #007bff; padding: 5px; font-size: 0.0001px;"></div>
             <div id="miss-display" class="miss-text">MISS!</div>
             <p id="result"></p>
-        </div>
+            <p id="message-element"></p> </div>
 
-        <hr>
+        <div id="my-rank-container" style="display:none; background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 2px solid #2196f3; text-align: center;">
+            <h3 style="margin: 0 0 10px 0; color: #0d47a1;">🏆 あなたの現在のランク</h3>
+            <div style="font-size: 1.2em;">
+                <span style="font-weight: bold; font-size: 1.5em; color: #d32f2f;" id="my-rank-display">--</span> 位
+            </div>
+            <div style="margin-top: 5px; color: #555;">
+                正打数: <span id="my-strokes-display" style="font-weight:bold;">0</span> / 
+                TPS: <span id="my-tps-display" style="font-weight:bold;">0</span> / 
+                正確率: <span id="my-accuracy-display" style="font-weight:bold;">0%</span>
+            </div>
+        </div>
 
         <div id="ranking-area">
-            <h2>ランキング</h2>
-            <ol id="rank-list"></ol>
+            <h2>ランキング (Top 300)</h2>
+            
+            <div class="table-container" style="max-height: 500px; overflow-y: auto; border: 1px solid #ccc;">
+                <table id="ranking-table">
+                    <thead>
+                        <tr>
+                            <th width="10%">順位</th>
+                            <th width="40%">名前</th>
+                            <th width="15%">正打数</th>
+                            <th width="15%">TPS</th>
+                            <th width="20%">正確率</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
         </div>
+
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>

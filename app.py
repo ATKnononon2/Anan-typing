@@ -210,6 +210,7 @@ def logout():
 @app.route('/api/rankings', methods=['GET'])
 def get_rankings():
     try:
+        # 1. データを全取得してソート
         all_records = Ranking.query.order_by(
             Ranking.correct_strokes.desc(),
             Ranking.tps.desc(),
@@ -220,15 +221,30 @@ def get_rankings():
         unique_rankings = []
         seen_emails = set()
 
+        # 2. 重複を除外してリストを作成（※ここでは人数制限せず全員分作る）
         for record in all_records:
             if record.email not in seen_emails:
                 unique_rankings.append(record.to_dict())
                 seen_emails.add(record.email)
-            
-            if len(unique_rankings) >= 10:
-                break
+        
+        # 3. 自分の順位を探す（全員分の中から探すので正確）
+        user_info = session.get('user_info')
+        my_rank_data = None
+        
+        if user_info:
+            my_email = user_info['email']
+            for index, r in enumerate(unique_rankings):
+                if r['email'] == my_email:
+                    my_rank_data = r
+                    my_rank_data['rank'] = index + 1
+                    break
 
-        return jsonify(unique_rankings), 200
+        # 4. JSONを返す際に、リストを「トップ300」に切り取る
+        # pythonのリストスライス [:300] を使います
+        return jsonify({
+            "ranking_list": unique_rankings[:300], # ★ここを300に変更
+            "my_rank": my_rank_data
+        }), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
