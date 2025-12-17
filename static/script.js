@@ -17,8 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ▲▲▲ 追加終わり ▲▲▲
 
     // メッセージ表示要素の生成と配置
-    const messageElement = document.createElement('p');                    
-    messageElement.id = 'game-message';                                          
+    const messageElement = document.createElement('p');
+    messageElement.id = 'game-message';
     document.getElementById('game-area').insertBefore(messageElement, romajiTargetElement.nextSibling); 
     
     const errorOverlay = document.getElementById('error-overlay');           // エラーオーバーレイ要素
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // - 用語の定義
         const words = [
-        { main: '俺のレベルに着いてこい！', sub: 'おれのれべるについてこい！', inp: 'orenoreberunituitekoi!' },
+        { main: '俺のレベルに追いてこい！', sub: 'おれのれべるについてこい！', inp: 'orenoreberunituitekoi!' },
         { main: '返事は、はいかYESか喜んで。', sub: 'へんじは、はいかYESかよろこんで。', inp: 'henziha,haikaYESkayorokonde.' },
         { main: '阿南は優しいんですよ。', sub: 'あなんはやさしいんですよ。', inp: 'ananhayasasiindesuyo.' },
         { main: '自分の限界に挑戦するのが課題研究だ。', sub: 'じぶんのげんかいにちょうせんするのがかだいけんきゅうだ。', inp: 'zibunnnogenkainichousensurunogakadaikenkyuuda.' },
