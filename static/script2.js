@@ -3,14 +3,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const targetTextElement = document.getElementById('target-text');       // 漢字表示要素
     const hiraganaDisplayElement = document.getElementById('romaji-display'); // ひらがな表示要素
     const romajiTargetElement = document.getElementById('typing-input');     // 色付きローマ字ターゲット要素
-    const startButton = document.getElementById('start-button');             // スタートボタン要素
-    const timerElement = document.getElementById('timer');                   // タイマー表示要素
-    const resultElement = document.getElementById('result');                 // 結果表示要素
-    const rankListElement = document.getElementById('rank-list');            // ランキング表示要素
+    const startButton = document.getElementById('start-button');            // スタートボタン要素
+    const timerElement = document.getElementById('timer');                  // タイマー表示要素
+    const resultElement = document.getElementById('result');                // 結果表示要素
+    const rankListElement = document.getElementById('rank-list');           // ランキング表示要素
     
+    // ▼▼▼ 自分のランク表示用の要素を取得 ▼▼▼
+    const myRankContainer = document.getElementById('my-rank-container');
+    const myRankDisplay = document.getElementById('my-rank-display');
+    const myStrokesDisplay = document.getElementById('my-strokes-display');
+    const myTpsDisplay = document.getElementById('my-tps-display');
+    const myAccuracyDisplay = document.getElementById('my-accuracy-display');
+    // ▲▲▲ ▲▲▲
+
     // メッセージ表示要素の生成と配置
     const messageElement = document.createElement('p');                    
-    messageElement.id = 'game-message';                                          
+    messageElement.id = 'game-message';                                                
     document.getElementById('game-area').insertBefore(messageElement, romajiTargetElement.nextSibling); 
     
     const errorOverlay = document.getElementById('error-overlay');           // エラーオーバーレイ要素
@@ -31,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let typedRomanBuffer = ''; // 未使用ですが、互換性のために残す
 
     // - 用語の定義
-        const words = [
+         const words = [
         { main: '俺のレベルに着いてこい！', sub: 'おれのれべるについてこい！', inp: 'orenoreberunituitekoi!' },
         { main: '返事は、はいかYESか喜んで。', sub: 'へんじは、はいかYESかよろこんで。', inp: 'henziha,haikaYESkayorokonde.' },
         { main: '阿南は優しいんですよ。', sub: 'あなんはやさしいんですよ。', inp: 'ananhayasasiindesuyo.' },
@@ -44,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
         { main: '阿南先生は絶対なんですよ。', sub: 'あなんせんせいはぜったいなんですよ。', inp: 'anansenseihazettainandesuyo.' },
         { main: '君たちの無限の可能性に期待している。', sub: 'きみたちのむげんのかのうせいにきたいしている。', inp: 'kimitatinomugennnokanouseinikitaisiteiru.' },
         { main: '数少ない時間の中で、如何に成果を出せるかだ。', sub: 'かずすくないじかんのなかで、いかにせいかをだせるかだ。', inp: 'kazusukunaizikannnonakade,ikaniseikawodaserukada.' },
-        { main: 'ほら、早く帰れ。', sub: 'ほら、はやくかえれ', inp: 'hora,hayakukaere.' },
         { main: 'やるかやらないかだろ、今すぐやれ。', sub: 'やるかやらないかだろ、いますぐやれ。', inp: 'yarukayaranaikadaro,imasuguyare.' },
         { main: '授業中に、スマホを触らない。', sub: 'じゅぎょうちゅうにすまほをさわらない。', inp: 'zyugyouchuuha,sumahowosawaranai' },
         { main: '俺は子供が嫌いだ。俺のレベル以下だからだ。', sub: 'おれはこどもがきらいだ。おれのれべるいかだからだ。', inp: 'orehakodomogakiraida.' },
@@ -55,9 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
         { main: '忙しい人は沢山います。', sub: 'いそがしいひとはたくさんいます。', inp: 'isogasiihitohatakusanimasu.' },
         { main: '阿南はお金稼ぎがしたいんですよ。', sub: 'あなんはおかねかせぎがしたいんですよ。', inp: 'ananhaokanekasegigasitaindesuyo.' },
         { main: 'とっくに、下校時間は過ぎてるぞ。', sub: 'とっくに、げこうじかんはすぎてるぞ。', inp: 'tokkuni,kaeruzikanhasugiteruzo.' },
-        { main: '俺よりも年齢がちょっと下の人。', sub: '', inp: '' },
-        { main: '', sub: '', inp: '' },
-        { main: '', sub: '', inp: '' },
+        { main: '俺よりも年齢がちょっと下の人。', sub: 'おれよりもねんれいがちょっとしたのひと。', inp: 'oreyorimonenreigachottoshitanohito.' },
+        { main: 'お金が無ければ何も出来ない。', sub: 'おかねがなければなにもできない。', inp: 'okaneganakerebananimodekinai.' },
+        { main: '俺は動けるデブだ。', sub: 'おれはうごけるデブだ。', inp: 'orehaugokerudebuda.' },
         { main: '', sub: '', inp: '' },
         { main: '', sub: '', inp: '' },
         { main: '', sub: '', inp: '' },
@@ -135,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { main: 'お前は情報テクノロジー大学校へ行け。', sub: 'おまえじょうほうてくのろじーだいがっこうへいけ。', inp: 'omaehazyouhoutekunoroziidaigakkouheike.' }
         // { main: '', sub: '', inp: '' },
     ];
-
+    
     // - ゲーム初期化処理
     function initializeGame() {
         totalKeyStrokes = 0;
@@ -162,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
         startButton.removeEventListener('click', endGameEarly);
         startButton.addEventListener('click', startCountdown);
 
-        // ランキングを取得
+        // ランキングの表示（記録はしませんが、見るだけ）
         updateRankingDisplayFromAPI(); 
     }
 
@@ -266,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (timeLeft < 0) timeLeft = 0;
             timerElement.textContent = `残り時間: ${timeLeft}秒`;
             if (timeLeft <= 0) {
-                gameOver(); // 時間切れの場合はランキングに不送信
+                gameOver();
             }
         }, 1000);
         romajiTargetElement.disabled = false; // 入力を有効化
@@ -365,7 +372,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     updateDisplay();
                 }
             }
-            // 't' を打った直後の分岐処理 (tiが解決済みなので、ここでは tya <-> tcha などの特殊ケース用だが、基本は先頭変換でカバー可能)
         }
         // ▲▲▲▲▲▲▲▲▲▲▲▲ 万能変換ロジック終了 ▲▲▲▲▲▲▲▲▲▲▲▲
 
@@ -410,7 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
-    // - ゲームを早期終了する処理 (ランキング送信をスキップ)
+    // - ゲームを早期終了する処理
     function endGameEarly() {
         if (isGameRunning && confirm('測定を中止しますか？')) {
             clearInterval(gameTimerId); // タイマーを停止
@@ -451,10 +457,6 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(gameTimerId);
         isGameRunning = false;
         
-        // もし入力エリアが <input> タグなら以下が必要ですが、
-        // <div>タグでキーイベントを取得している場合は不要なのでコメントアウトしておきます
-        // romajiTargetElement.disabled = true; 
-
         startButton.disabled = false;
         startButton.textContent = 'もう一度プレイ';
         startButton.classList.remove('end-game-button');
@@ -474,63 +476,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         resultElement.textContent = `最終結果: 正答率 ${accuracy}%, TPS ${tps}, 正解タイプ数 ${totalCorrectInput}回`;
         
-        // ユーザーへのメッセージ
-        messageElement.textContent = 'お疲れ様です。データを保存中...';
-        messageElement.style.color = '#d9534f';
+        // ユーザーへのメッセージ（保存しないのでメッセージ変更）
+        messageElement.textContent = 'お疲れ様です。';
+        messageElement.style.color = '#28a745';
 
-        // ★修正済み: prompt（名前入力）を削除し、スコアデータだけを送信
-        postRanking({ 
-            accuracy: accuracy, 
-            tps: tps, 
-            correct_strokes: totalCorrectInput 
-        });
+        // ★ランキング記録処理（postRanking）の呼び出しを削除しました
         
         gameStartTime = 0; 
     }
 
-    // - ランキングデータをバックエンドに送信する関数
-    function postRanking(score) {
-        fetch('/api/rankings', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                // ★修正点1: name はサーバー側(Python)でセッションから自動取得するので送信不要
-                accuracy: parseFloat(score.accuracy),
-                tps: parseFloat(score.tps),
-                correct_strokes: score.correct_strokes 
-            })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Ranking added successfully:', data);
-            
-            // ★重要: サーバーから最新のランキングリストが返ってきている場合、
-            // それを直接表示関数に渡すと無駄な通信が減らせます。
-            // サーバーの実装次第ですが、ここでは念のため再取得のままにします。
-            updateRankingDisplayFromAPI();
-        })
-        .catch(error => {
-            console.error('Error adding ranking:', error);
-            messageElement.textContent = 'ランキングの保存に失敗しました。';
-            messageElement.style.color = 'red';
-        });
-    }
-
-    // - APIからランキングを取得し表示する関数
-   // - APIからランキングを取得し表示する関数
+    // - APIからランキングを取得し表示する関数 (閲覧専用)
     function updateRankingDisplayFromAPI() {
-        // ★ローディング表示（テーブルの中身を一時的にクリア）
-        const tableBody = document.querySelector('#ranking-table tbody');
-        if(tableBody) {
-             tableBody.innerHTML = '<tr><td colspan="5">読み込み中...</td></tr>';
-        }
+        // 要素がない場合はエラーになるのを防ぐ
+        if (!rankListElement) return;
+
+        // 読み込み中メッセージ
+        rankListElement.innerHTML = '<li>ランキングを読み込み中...</li>';
 
         fetch('/api/rankings')
         .then(response => {
@@ -540,63 +501,48 @@ document.addEventListener('DOMContentLoaded', () => {
             return response.json();
         })
         .then(data => {
-            // ★APIの返却形式が変わったため、受け取り方も変更
-            // data = { ranking_list: [...], my_rank: {...} } となっています
-            const rankingList = data.ranking_list;
-            const myRank = data.my_rank;
+            const rankings = data.ranking_list;
+            const myRankData = data.my_rank;
 
-            // ===============================================
-            // 1. 「あなたのランク」エリアの更新
-            // ===============================================
-            const myRankContainer = document.getElementById('my-rank-container');
-            
-            if (myRank && myRankContainer) {
-                // データがある場合のみ表示
-                myRankContainer.style.display = 'block'; 
-                document.getElementById('my-rank-display').textContent = myRank.rank;
-                document.getElementById('my-strokes-display').textContent = myRank.correct_strokes;
-                document.getElementById('my-tps-display').textContent = myRank.tps;
-                document.getElementById('my-accuracy-display').textContent = myRank.accuracy + '%';
-            } else if (myRankContainer) {
-                // データがない場合は隠す
-                myRankContainer.style.display = 'none';
-            }
-
-            // ===============================================
-            // 2. ランキング表（トップ300）の更新
-            // ===============================================
-            if(tableBody) {
-                tableBody.innerHTML = ''; // クリア
-
-                if (rankingList.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="5">まだランキングはありません。</td></tr>';
-                    return;
+            // 1. 「あなたの現在のランク」の表示処理
+            if (myRankData && myRankContainer) {
+                myRankContainer.style.display = 'block';
+                myRankDisplay.textContent = myRankData.rank;
+                myStrokesDisplay.textContent = myRankData.correct_strokes;
+                myTpsDisplay.textContent = myRankData.tps; 
+                myAccuracyDisplay.textContent = myRankData.accuracy + '%';
+            } else {
+                if (myRankContainer) {
+                    myRankContainer.style.display = 'none';
                 }
-
-                rankingList.forEach((rank, index) => {
-                    const tr = document.createElement('tr');
-                    
-                    // 自分の行だけ色を変えたい場合はクラスを追加（任意）
-                    // if (myRank && rank.email === myRank.email) { tr.style.backgroundColor = "#fff9c4"; }
-
-                    tr.innerHTML = `
-                        <td>${index + 1}</td>
-                        <td style="text-align: left;">${rank.email}</td>
-                        <td>${rank.correct_strokes}</td>
-                        <td>${rank.tps}</td>
-                        <td>${rank.accuracy}%</td>
-                    `;
-                    tableBody.appendChild(tr);
-                });
             }
+
+            // 2. ランキングリストの表示処理
+            rankListElement.innerHTML = '';
+
+            if (!rankings || rankings.length === 0) {
+                rankListElement.innerHTML = '<li>まだランキングはありません。</li>';
+                return;
+            }
+
+            rankings.forEach((rank, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span style="font-weight:bold;">${index + 1}. ${rank.email}</span><br>
+                    <span style="font-size:0.9em; margin-left: 15px;">
+                        正打数: ${rank.correct_strokes}回 / 
+                        TPS: ${rank.tps} / 
+                        正誤率: ${rank.accuracy}%
+                    </span>`; 
+                
+                rankListElement.appendChild(li);
+            });
         })
         .catch(error => {
             console.error('Error fetching rankings:', error);
-            if(tableBody) {
-                tableBody.innerHTML = '<tr><td colspan="5" style="color:red;">ランキングの取得に失敗しました。</td></tr>';
-            }
+            rankListElement.innerHTML = '<li>ランキングの取得に失敗しました。</li>';
         });
     }
-    
+
     initializeGame();
 });

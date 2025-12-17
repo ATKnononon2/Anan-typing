@@ -8,39 +8,46 @@
 </head>
 <body>
     <div class="container">
-        <div style="text-align: right; margin-top: 10px;">
+        <div class="user-info-bar">
             <span>ログイン中: {{ user.email }}</span>
-            <a href="/logout" style="margin-left: 10px; color: red;">ログアウト</a>
+            <a href="/logout" class="logout-link">ログアウト</a>
         </div>
 
         <h1>阿南タイピング</h1>
+
         <div id="game-area">
             <div id="timer">残り時間: <span id="clickable-time">60秒</span></div>
             
             <div id="target-text"></div>
             <div id="romaji-display"></div>
-            <div id="typing-input"></div>
+            
+            <div id="typing-input" contenteditable="false"></div>
+            
             <button id="start-button">スタート</button>
+            
             <div id="error-overlay" class="overlay"></div>
-            <div id="typed-text" style="min-height: 1.2em; border-bottom: 2px dashed #007bff; padding: 5px; font-size: 0.0001px;"></div>
             <div id="miss-display" class="miss-text">MISS!</div>
+            
+            <div id="typed-text" style="display:none;"></div>
+            
             <p id="result"></p>
-            <p id="message-element"></p> </div>
+            <p id="game-message"></p> 
+        </div>
 
-        <div id="my-rank-container" style="display:none; background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 2px solid #2196f3; text-align: center;">
-            <h3 style="margin: 0 0 10px 0; color: #0d47a1;">🏆 あなたの現在のランク</h3>
-            <div style="font-size: 1.2em;">
-                <span style="font-weight: bold; font-size: 1.5em; color: #d32f2f;" id="my-rank-display">--</span> 位
+        <div id="my-rank-container">
+            <h3>🔥あなたの現在の順位</h3>
+            <div>
+                <span id="my-rank-display">--</span> 位
             </div>
-            <div style="margin-top: 5px; color: #555;">
-                正打数: <span id="my-strokes-display" style="font-weight:bold;">0</span> / 
-                TPS: <span id="my-tps-display" style="font-weight:bold;">0</span> / 
-                正確率: <span id="my-accuracy-display" style="font-weight:bold;">0%</span>
+            <div class="my-rank-stats">
+                正打数: <span id="my-strokes-display">0</span> / 
+                TPS: <span id="my-tps-display">0</span> / 
+                正確率: <span id="my-accuracy-display">0%</span>
             </div>
         </div>
 
         <div id="ranking-area">
-            <h2>ランキング</h2>
+            <h2>校内ランキング</h2>
             <ol id="rank-list"></ol>
         </div>
 
