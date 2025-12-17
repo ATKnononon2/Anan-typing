@@ -290,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const char = inputString[i];
             let color = 'black'; 
             if (i < currentIndex) {
-                color = 'green'; // 正解済み
+                color = 'grey'; // 正解済み
             } else if (i === currentIndex) {
                 color = 'blue';  // 次に打つ文字
             }
