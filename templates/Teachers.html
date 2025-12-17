@@ -40,27 +40,12 @@
         </div>
 
         <div id="ranking-area">
-            <h2>ランキング (Top 300)</h2>
-            
-            <div class="table-container" style="max-height: 500px; overflow-y: auto; border: 1px solid #ccc;">
-                <table id="ranking-table">
-                    <thead>
-                        <tr>
-                            <th width="10%">順位</th>
-                            <th width="40%">名前</th>
-                            <th width="15%">正打数</th>
-                            <th width="15%">TPS</th>
-                            <th width="20%">正確率</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        </tbody>
-                </table>
-            </div>
+            <h2>ランキング</h2>
+            <ol id="rank-list"></ol>
         </div>
 
     </div>
 
-    <script src="{{ url_for('static', filename='script2.js') }}"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
