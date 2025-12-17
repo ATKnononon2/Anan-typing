@@ -36,7 +36,7 @@ ALLOWED_EMAILS = [
 ]
 
 # ==========================================
-# 🛑 管理者・先生 (Teaches.html) 用の許可リスト
+# 🛑 管理者・先生 (Teachers.html) 用の許可リスト
 # ==========================================
 # ここに含まれるメールアドレス、またはドメインを持つ人は /Anan-Only に飛ばします
 KEY_ALLOWED_EMAILS = [
@@ -151,7 +151,7 @@ def Anan_page():
                 break
 
     if is_allowed:
-        return render_template("Teaches.html", user=user)
+        return render_template("Teachers.html", user=user)
     else:
         # 権限がないのにアクセスした場合のエラー処理
         return "このページにアクセスする権限がありません。", 403
@@ -218,7 +218,7 @@ def login_callback():
                     break
         
         if is_teacher:
-            print(f"★振分ログ: {email} -> Teaches.html")
+            print(f"★振分ログ: {email} -> Teachers.html")
             return redirect(url_for('Anan_page'))
         else:
             print(f"★振分ログ: {email} -> Students.html")
