@@ -397,7 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // お題をクリアしたかチェック
                 if (currentIndex >= inputString.length) {
-                    messageElement.style.color = '#28a745';
+                    messageElement.style.color = '#8f8f8fff';
                     
                     // 次のお題を表示する前に少し待つ
                     setTimeout(() => {
@@ -477,8 +477,8 @@ document.addEventListener('DOMContentLoaded', () => {
         resultElement.textContent = `最終結果: 正答率 ${accuracy}%, TPS ${tps}, 正解タイプ数 ${totalCorrectInput}回`;
         
         // ユーザーへのメッセージ（保存しないのでメッセージ変更）
-        messageElement.textContent = 'お疲れ様です。';
-        messageElement.style.color = '#28a745';
+        messageElement.textContent = 'お疲れ様です。データの記録は行いません。';
+        messageElement.style.color = '#d9534f';
 
         // ★ランキング記録処理（postRanking）の呼び出しを削除しました
         

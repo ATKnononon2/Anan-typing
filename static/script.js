@@ -398,7 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // お題をクリアしたかチェック
                 if (currentIndex >= inputString.length) {
-                    messageElement.style.color = '#28a745';
+                    messageElement.style.color = '#8f8f8fff';
                     
                     // 次のお題を表示する前に少し待つ
                     setTimeout(() => {
@@ -482,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resultElement.textContent = `最終結果: 正答率 ${accuracy}%, TPS ${tps}, 正解タイプ数 ${totalCorrectInput}回`;
         
         // ユーザーへのメッセージ
-        messageElement.textContent = 'お疲れ様です。データを保存中...';
+        messageElement.textContent = 'お疲れ様です。データを保存します。';
         messageElement.style.color = '#d9534f';
 
         // ★修正済み: prompt（名前入力）を削除し、スコアデータだけを送信
