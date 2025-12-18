@@ -290,9 +290,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const char = inputString[i];
             let color = 'black'; 
             if (i < currentIndex) {
-                color = 'grey'; // 正解済み
+                color = 'rgba(0, 0, 0, 0.3)'; // 正解済み
             } else if (i === currentIndex) {
-                color = 'blue';  // 次に打つ文字
+                color = '#002fff';  // 次に打つ文字
             }
             newHtml += `<span style="color: ${color};">${char}</span>`;
         }

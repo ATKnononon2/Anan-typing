@@ -46,9 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
         { main: '自分の限界に挑戦するのが課題研究だ。', sub: 'じぶんのげんかいにちょうせんするのがかだいけんきゅうだ。', inp: 'zibunnnogenkainichousensurunogakadaikenkyuuda.' },
         { main: '俺の心は海よりちょっと狭いくらい。', sub: 'おれのこころはうみよりちょっとせまいくらい。', inp: 'orenokokorohaumiyorichottosemaikurai.' },
         { main: '俺はダイエット中なんだよ。', sub: 'おれはだいえっとちゅうなんだよ。', inp: 'orehadaiettochuunandayo.' },
-        { main: 'ほら、早く帰れ。', sub: 'ほら、はやくかえれ。', inp: 'hora,hayakukaere.' },
+        { main: 'ほら早く帰れ。', sub: 'ほらはやくかえれ。', inp: 'horahayakukaere.' },
         { main: '阿南は怒っています。', sub: 'あなんはおこっています。', inp: 'ananhaokotteimasu.' },
-        { main: '俺はIT未来を、こんな学校にしたい。', sub: 'おれはITみらいを、こんながっこうにしたい。', inp: 'orehaITmiraiwo,konnnagakkounisitai.' },
+        { main: '俺はIT未来高校を、良い学校にしたい。', sub: 'おれはITみらいこうこうを、よいがっこうにしたい。', inp: 'orehaITmiraikoukouwo,yoigakkounisitai.' },
         { main: '阿南先生は絶対なんですよ。', sub: 'あなんせんせいはぜったいなんですよ。', inp: 'anansenseihazettainandesuyo.' },
         { main: '君たちの無限の可能性に期待している。', sub: 'きみたちのむげんのかのうせいにきたいしている。', inp: 'kimitatinomugennnokanouseinikitaisiteiru.' },
         { main: '数少ない時間の中で、如何に成果を出せるかだ。', sub: 'かずすくないじかんのなかで、いかにせいかをだせるかだ。', inp: 'kazusukunaizikannnonakade,ikaniseikawodaserukada.' },
@@ -65,12 +65,12 @@ document.addEventListener('DOMContentLoaded', () => {
         { main: '俺よりも年齢がちょっと下の人。', sub: 'おれよりもねんれいがちょっとしたのひと。', inp: 'oreyorimonenreigachottoshitanohito.' },
         { main: 'お金が無ければ何も出来ない。', sub: 'おかねがなければなにもできない。', inp: 'okaneganakerebananimodekinai.' },
         { main: '俺は動けるデブだ。', sub: 'おれはうごけるデブだ。', inp: 'orehaugokerudebuda.' },
-        { main: '', sub: '', inp: '' },
-        { main: '', sub: '', inp: '' },
-        { main: '', sub: '', inp: '' },
-        { main: '', sub: '', inp: '' },
-        { main: '', sub: '', inp: '' },
-        { main: '', sub: '', inp: '' },
+        { main: '俺と対等に話せるように俺のレベルまで来てくれよ。', sub: 'おれとたいとうにはなせるようにおれのれべるまできてくれよ。', inp: 'oretotaitounihanaseruyouniorenoreberumadekitekureyo.' },
+        { main: '残業なんて当たり前ですよ。', sub: '', inp: '' },
+        { main: '俺の昨日の睡眠時間は、2時間。', sub: '', inp: '' },
+        { main: '俺はショートスリーパーなんだよ。', sub: '', inp: '' },
+        { main: '眠いなら立ってれば良いんですよ。', sub: '', inp: '' },
+        { main: 'お昼が一番眠くなるんだよ。', sub: '', inp: '' },
         { main: '', sub: '', inp: '' },
         { main: '', sub: '', inp: '' },
         { main: '', sub: '', inp: '' },
@@ -290,9 +290,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const char = inputString[i];
             let color = 'black'; 
             if (i < currentIndex) {
-                color = 'grey'; // 正解済み
+                color = 'rgba(0, 0, 0, 0.3)'; // 正解済み
             } else if (i === currentIndex) {
-                color = 'blue';  // 次に打つ文字
+                color = '#002fff';  // 次に打つ文字
             }
             newHtml += `<span style="color: ${color};">${char}</span>`;
         }
