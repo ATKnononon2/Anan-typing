@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { main: '君たちの無限の可能性に期待している。', sub: 'きみたちのむげんのかのうせいにきたいしている。', inp: 'kimitatinomugennnokanouseinikitaisiteiru.' },
         { main: '数少ない時間の中で、如何に成果を出せるかだ。', sub: 'かずすくないじかんのなかで、いかにせいかをだせるかだ。', inp: 'kazusukunaizikannnonakade,ikaniseikawodaserukada.' },
         { main: 'やるかやらないかだろ、今すぐやれ。', sub: 'やるかやらないかだろ、いますぐやれ。', inp: 'yarukayaranaikadaro,imasuguyare.' },
-        { main: '授業中に、スマホを触らない。', sub: 'じゅぎょうちゅうにすまほをさわらない。', inp: 'zyugyouchuuha,sumahowosawaranai' },
+        { main: '授業中に、スマホを触らない。', sub: 'じゅぎょうちゅうに、すまほをさわらない。', inp: 'zyugyouchuuni,sumahowosawaranai' },
         { main: '俺は子供が嫌いだ。俺のレベル以下だからだ。', sub: 'おれはこどもがきらいだ。おれのれべるいかだからだ。', inp: 'orehakodomogakiraida.' },
         { main: '大学までバリバリ体育会系だ。', sub: 'だいがくまでばりばりたいいくかいけいだ。', inp: 'daigakumadebaribaritaiikukaikeida.' },
         { main: '意見を言うのは簡単です。', sub: 'いけんをいうのはかんたんです。', inp: 'ikenwoiunohakantandesu.' },
@@ -300,24 +300,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // キー入力イベントリスナー（万能入力対応版）
+    // キー入力イベントリスナー（万能入力対応版・リファクタリング済）
     document.addEventListener('keydown', (event) => {
-        if (!isGameRunning) return; // ゲーム中でない場合は何もしない
+        if (!isGameRunning) return;
 
         // 特殊キーやCtrl/Alt/Metaキーとの組み合わせは無視
         if (event.key.length > 1 && event.key !== ' ' && !event.ctrlKey && !event.altKey && !event.metaKey) {
             return; 
         }
 
-        // 入力キーを取得
         const pressedKey = event.key;
 
-        // ▼▼▼▼▼▼▼▼▼▼▼▼ 万能変換ロジック開始 ▼▼▼▼▼▼▼▼▼▼▼▼
         
-        // 1. 【先頭文字が変わるパターン】 (ti -> chi, tu -> tsu, hu -> fu など)
+
+        // ▼▼▼▼▼▼▼▼▼▼▼▼ 万能変換ロジック開始 ▼▼▼▼▼▼▼▼▼▼▼▼
         if (currentIndex < inputString.length) {
             const remainingText = inputString.substring(currentIndex);
-            
-            // 変換リスト (主要なヘボン式・訓令式の違いを網羅)
+        
             const conversions = [
                 { main: 'ti',  alt: 'chi' },
                 { main: 'tu',  alt: 'tsu' },
@@ -332,6 +331,12 @@ document.addEventListener('DOMContentLoaded', () => {
             ];
 
             for (const conv of conversions) {
+                // 【重要】1文字目が同じ場合（tu vs tsu, ja vs jya 等）は、
+                // ここで判定すると誤動作の原因になるためスキップし、後続の「セクション2」に任せる
+                if (conv.main[0] === conv.alt[0]) {
+                    continue;
+                }
+
                 // お題が main で始まり、ユーザーが alt の1文字目を打った場合 → alt に置換
                 if (remainingText.startsWith(conv.main) && pressedKey === conv.alt[0]) {
                     inputString = inputString.substring(0, currentIndex) + conv.alt + inputString.substring(currentIndex + conv.main.length);
@@ -347,29 +352,47 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 2. 【2文字目以降で分岐するパターン】 (si -> shi, sha -> sya など)
+        // -------------------------------------------------------------------------
+        // 2. 【2文字目以降で分岐するパターン】 (si <-> shi, tu <-> tsu, ja <-> jya など)
+        // -------------------------------------------------------------------------
         if (currentIndex > 0 && currentIndex < inputString.length) {
             const remainingText = inputString.substring(currentIndex);
             const prevChar = inputString[currentIndex - 1]; // すでに打った1文字前の文字
 
-            // 's' を打った直後の分岐処理
-            if (prevChar === 's') {
-                if (remainingText.startsWith('i') && pressedKey === 'h') {
-                    // si -> shi
-                    inputString = inputString.substring(0, currentIndex) + 'hi' + inputString.substring(currentIndex + 1);
+            // ★設定リスト：ここに行を追加するだけで対応パターンを増やせます
+            const rules = [
+                // --- S行 (si <-> shi, sha <-> sya) ---
+                { prev: 's', target: 'i',  input: 'h', replace: 'hi' }, // si -> shi
+                { prev: 's', target: 'hi', input: 'i', replace: 'i'  }, // shi -> si
+                { prev: 's', target: 'ya', input: 'h', replace: 'ha' }, // sya -> sha
+                { prev: 's', target: 'ha', input: 'y', replace: 'ya' }, // sha -> sya
+                { prev: 's', target: 'yu', input: 'h', replace: 'hu' }, // syu -> shu
+                { prev: 's', target: 'hu', input: 'y', replace: 'yu' }, // shu -> syu
+                { prev: 's', target: 'yo', input: 'h', replace: 'ho' }, // syo -> sho
+                { prev: 's', target: 'ho', input: 'y', replace: 'yo' }, // sho -> syo
+
+                // --- T行 (tu <-> tsu, ti <-> tyi ※tyiは稀だが一応) ---
+                { prev: 't', target: 'u',  input: 's', replace: 'su' }, // tu -> tsu
+                { prev: 't', target: 'su', input: 'u', replace: 'u'  }, // tsu -> tu
+
+                // --- J行 (ja <-> jya, ju <-> jyu, jo <-> jyo) ---
+                // ja -> jya
+                { prev: 'j', target: 'a',  input: 'y', replace: 'ya' }, 
+                { prev: 'j', target: 'u',  input: 'y', replace: 'yu' }, 
+                { prev: 'j', target: 'o',  input: 'y', replace: 'yo' }, 
+                // jya -> ja
+                { prev: 'j', target: 'ya', input: 'a', replace: 'a'  }, 
+                { prev: 'j', target: 'yu', input: 'u', replace: 'u'  }, 
+                { prev: 'j', target: 'yo', input: 'o', replace: 'o'  }, 
+            ];
+
+            // ルールを走査して一致するものを適用
+            for (const rule of rules) {
+                if (prevChar === rule.prev && remainingText.startsWith(rule.target) && pressedKey === rule.input) {
+                    // 文字列を置換
+                    inputString = inputString.substring(0, currentIndex) + rule.replace + inputString.substring(currentIndex + rule.target.length);
                     updateDisplay();
-                } else if (remainingText.startsWith('hi') && pressedKey === 'i') {
-                    // shi -> si
-                    inputString = inputString.substring(0, currentIndex) + 'i' + inputString.substring(currentIndex + 2);
-                    updateDisplay();
-                } else if (remainingText.startsWith('ya') && pressedKey === 'h') {
-                    // sya -> sha
-                    inputString = inputString.substring(0, currentIndex) + 'ha' + inputString.substring(currentIndex + 2);
-                    updateDisplay();
-                } else if (remainingText.startsWith('ha') && pressedKey === 'y') {
-                    // sha -> sya
-                    inputString = inputString.substring(0, currentIndex) + 'ya' + inputString.substring(currentIndex + 2);
-                    updateDisplay();
+                    break; // 一致したらループを抜ける
                 }
             }
         }
