@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // - 用語の定義
         const words = [
-               { main: '俺のレベルに追いてこい！', sub: 'おれのれべるについてこい！', inp: 'orenoreberunituitekoi!' },
+        { main: '俺のレベルに追いてこい！', sub: 'おれのれべるについてこい！', inp: 'orenoreberunituitekoi!' },
         { main: '返事は、はいかYESか喜んで。', sub: 'へんじは、はいかYESかよろこんで。', inp: 'henziha,haikaYESkayorokonde.' },
         { main: '阿南は優しいんですよ。', sub: 'あなんはやさしいんですよ。', inp: 'ananhayasasiindesuyo.' },
         { main: '自分の限界に挑戦するのが課題研究だ。', sub: 'じぶんのげんかいにちょうせんするのがかだいけんきゅうだ。', inp: 'zibunnnogenkainichousensurunogakadaikenkyuuda.' },
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { main: '死ぬまでは過労じゃない。', sub: 'しぬまではかろうじゃない。', inp: 'sinumadehakarouzyanai.' },
         { main: '忙しい人は沢山います。', sub: 'いそがしいひとはたくさんいます。', inp: 'isogasiihitohatakusanimasu.' },
         { main: '阿南はお金稼ぎがしたいんですよ。', sub: 'あなんはおかねかせぎがしたいんですよ。', inp: 'ananhaokanekasegigasitaindesuyo.' },
-        { main: 'とっくに、下校時間は過ぎてるぞ。', sub: 'とっくに、げこうじかんはすぎてるぞ。', inp: 'tokkuni,kaeruzikanhasugiteruzo.' },
+        { main: 'とっくに、下校時間は過ぎてるぞ。', sub: 'とっくに、げこうじかんはすぎてるぞ。', inp: 'tokkuni,gekouzikanhasugiteruzo.' },
         { main: '俺よりも年齢がちょっと下の人。', sub: 'おれよりもねんれいがちょっとしたのひと。', inp: 'oreyorimonenreigachottoshitanohito.' },
         { main: 'お金が無ければ何も出来ない。', sub: 'おかねがなければなにもできない。', inp: 'okaneganakerebananimodekinai.' },
         { main: '俺は動けるデブだ。', sub: 'おれはうごけるデブだ。', inp: 'orehaugokerudebuda.' },
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { main: '阿南先生、今度鳥取行ってきます。', sub: 'あなんせんせい、こんどとっとりいってきます。', inp: 'anansenseikondotottoriittekimasu.' },
         { main: '行ってきましたよ、鳥取砂丘。', sub: 'いってきましたよ、とっとりさきゅう。', inp: 'ittekimasitayo,tottorisakkyuu.' },
         { main: '俺はIT未来に20年しがみ付く!', sub: 'おれはITみらいに20ねんしがみつく!', inp: 'orehaITmirani20nensigamituku!' },
-        { main: '次の産フェア茨城の時には、阿南は先生じゃなくなっている。', sub: 'つぎのさんふぇあいばらきのときには、あなんはせんせいじゃなくなっている。', inp: 'tuginosanfeaibarakinotokiniwha,ananhasenseizyanakunatteiru.' },
+        { main: '次の産フェア茨城の時には、阿南は先生じゃなくなっている。', sub: 'つぎのさんふぇあいばらきのときには、あなんはせんせいじゃなくなっている。', inp: 'tuginosanfeaibarakinotokiniha,ananhasenseizyanakunatteiru.' },
         { main: '皆さん知っていますか。', sub: 'みなさんしっていますか。', inp: 'minasansitteimasuka.' },
         { main: '阿南先生の残業時間は過労死ラインを超えています。', sub: 'あなんせんせいのざんぎょうじかんはかろうしらいんをこえています。', inp: 'anansenseinozangyozikanhakarousirainwokoeteimasu.' },
         { main: '阿南先生は、嬉しい。', sub: 'あなんせんせいは、うれしい。', inp: 'anansenseiha,ureshii.' },
@@ -95,8 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { main: 'うちの課題研究は出せるレベルのことをやっている。', sub: 'うちのかだいけんきゅうはだせるれべるのことをやっている。', inp: 'utinokadaikenkyuuhadeserureberunokotowoyatteiru.' },
         { main: '500万の金を出す代わり、全情コンの件数を報告しろ。', sub: '500まんのかねをだすかわり、ぜんじょうこんのけんすうをほうこくしろ。', inp: '500mannnokanewodasukawarini,zenzyoukonnnokensuuwohoukokusiro.' },
         { main: '冬休みに完成させてくるんですよね?', sub: 'ふゆやすみにかんせいさせてくるんですよね?', inp: 'fuyuyasuminikanseisasetekurundesuyone?' },
-        { main: 'お前は情報テクノロジー大学校へ行け。', sub: 'おまえじょうほうてくのろじーだいがっこうへいけ。', inp: 'omaehazyouhoutekunoroziidaigakkouheike.' }
-        // { main: '', sub: '', inp: '' },
+        { main: 'お前は情報テクノロジー大学校へ行け。', sub: 'おまえじょうほうてくのろじーだいがっこうへいけ。', inp: 'omaehazyouhoutekunorozi-daigakkouheike.' }
     ];
 
     // - ゲーム初期化処理
