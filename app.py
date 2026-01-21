@@ -301,5 +301,5 @@ def add_ranking():
 
 if __name__ == '__main__':
     init_db()
-    is_debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    is_debug = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
     app.run(debug=is_debug, host='0.0.0.0', port=5000)
