@@ -32,7 +32,7 @@ ALLOWED_DOMAINS = [
 ]
 
 ALLOWED_EMAILS = [
-    "amtptjx@gmail.com"
+    ""
 ]
 
 # ==========================================
@@ -40,7 +40,7 @@ ALLOWED_EMAILS = [
 # ==========================================
 # ここに含まれるメールアドレス、またはドメインを持つ人は /Anan-Only に飛ばします
 KEY_ALLOWED_EMAILS = [
-    "amtptjx@gmail.com"
+    ""
 ]
 KEY_ALLOWED_SUFFIXES = [
     "mail.ibk.ed.jp",
