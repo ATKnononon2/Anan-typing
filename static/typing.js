@@ -96,7 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
         { main: '500万の金を出す代わり、全情コンの件数を報告しろ。', sub: '500まんのかねをだすかわり、ぜんじょうこんのけんすうをほうこくしろ。', inp: '500mannnokanewodasukawarini,zenzyoukonnnokensuuwohoukokusiro.' },
         { main: '冬休みに完成させてくるんですよね?', sub: 'ふゆやすみにかんせいさせてくるんですよね?', inp: 'fuyuyasuminikanseisasetekurundesuyone?' },
         { main: 'Geminiが使えない奴は、社会で役に立たない。', sub: 'Geminiがつかえないやつは、しゃかいでやくにたたない。', inp: 'Geminigatukaenaiyatuhasyakaideyakunitatanai.' },
-        { main: 'これからはAIが使えるか使えないかで', sub: 'これからはAIがつかえるかつかえないかで', inp: 'korekarahaAIgatukaerukatukaenaikade' },
         { main: 'Geminiと会話できない奴は社会でも会話できない。', sub: 'Geminiとかいわできないやつはしゃかでもかいわできない。', inp: 'Geminitokaiwadekinaiyatuhasyakaidemoyakunitatanai.' },
         { main: '阿南先生の言葉が知りたいんだったら、小沢一郎の言葉を調べるといいですよ。', sub: 'あなんせんせいのことばがしりたいんだったら、おざわいちろうのことばをしらべるといいですよ。', inp: 'anansenseinokotobawosiritaindattara,ozawaitirounokotobawosiraberutoiidesuyo.' },
         { main: '〇〇さんとお友達になる方法', sub: 'まるまるさんとおともだちになるほうほう', inp: 'marumarusantootomodatininaruhouhou' },
