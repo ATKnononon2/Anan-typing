@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { main: 'Canvaがアツいんですよ。', sub: 'canvaがあついんですよ。', inp: 'Canvagaatuindesuyo.' },
         { main: '阿南先生の休日のご予定はなんですか? 仕事です。', sub: 'あなんせんせいのきゅうじつのごよていはなんですか? しごとです。', inp: 'anansenseinokyuuzitunogoyoteihanandesuka?sigotodesu.' },
         { main: '阿南の言葉は譲り受けなんですよ。', sub: 'あなんせんせいのことばはゆずりうけなんですよ。', inp: 'anansenseinokotobahayuzuriukenandesuyo.' },
-        { main: 'うちの課題研究は出せるレベルのことをやっている。', sub: 'うちのかだいけんきゅうはだせるれべるのことをやっている。', inp: 'utinokadaikenkyuuhadeserureberunokotowoyatteiru.' },
+        { main: 'うちの課題研究は出せるレベルのことをやっている。', sub: 'うちのかだいけんきゅうはだせるれべるのことをやっている。', inp: 'utinokadaikenkyuuhadaserureberunokotowoyatteiru.' },
         { main: '500万の金を出す代わり、全情コンの件数を報告しろ。', sub: '500まんのかねをだすかわり、ぜんじょうこんのけんすうをほうこくしろ。', inp: '500mannnokanewodasukawarini,zenzyoukonnnokensuuwohoukokusiro.' },
         { main: '冬休みに完成させてくるんですよね?', sub: 'ふゆやすみにかんせいさせてくるんですよね?', inp: 'fuyuyasuminikanseisasetekurundesuyone?' },
         { main: 'Geminiが使えない奴は、社会で役に立たない。', sub: 'Geminiがつかえないやつは、しゃかいでやくにたたない。', inp: 'Geminigatukaenaiyatuhasyakaideyakunitatanai.' },
