@@ -234,6 +234,10 @@ def get_rankings():
             "ranking_list": unique_rankings[:300],
             "my_rank": my_rank_data
         }), 200
+    except Exception as e:
+    # エラーが発生した場合に詳細をログに出し、空のリストを返す
+        print(f"ランキング取得エラー: {e}")
+        return jsonify({"error": str(e), "ranking_list": []}), 500
 
 @app.route('/api/rankings', methods=['POST'])
 def add_ranking():
