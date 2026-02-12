@@ -1,13 +1,13 @@
-version: '3.8'
+version: '3.8' # Composeファイルのバージョンを指定
 
 services:
-  # 1. Pythonアプリの定義
+  # Pythonアプリの定義
   web:
     build: .
     ports:
       - "5000:5000"
     environment:
-      # .envファイルから値を読み込みます
+      # .envファイルから値を読み込む
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_HOST=${MYSQL_HOST}
@@ -17,11 +17,11 @@ services:
     depends_on:
       - db
 
-  # 2. MySQLデータベースの定義
+  # MySQLデータベースの定義
   db:
     image: mysql:8.0
     environment:
-      # .envファイルから値を読み込みます
+      # .envファイルから値を読み込む
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
     ports:
@@ -29,5 +29,6 @@ services:
     volumes:
       - db_data:/var/lib/mysql
 
+# データの永続化
 volumes:
-  db_data:
+  db_data: # Dockerのボリュームを定義

@@ -1,17 +1,25 @@
 # Pythonのバージョンを指定
 FROM python:3.10
 
+# ログがバッファされずにすぐ表示されるように設定
+ENV PYTHONUNBUFFERED=1
+
 # 作業ディレクトリを作成
 WORKDIR /app
 
-# 必要なファイルをコンテナ内にコピー
+# 先に requirements.txt だけをコピー
 COPY requirements.txt .
+
+# ソースコードを入れる前にインストール
+RUN pip install --no-cache-dir -r requirements.txt
+
+# インストールが終わってから、ソースコード類をコピー
 COPY app.py .
 COPY templates ./templates
 COPY static ./static
 
-# ライブラリをインストール
-RUN pip install --no-cache-dir -r requirements.txt
+# ポート5000を開放することを明示
+EXPOSE 5000
 
-# アプリを起動 (ホスト0.0.0.0で公開)
+# アプリを起動
 CMD ["python", "app.py"]

@@ -1,8 +1,11 @@
-import os
-import time
-import datetime
-import logging
-import secrets  # 追加
+# 必須モジュールのインポート
+import os       #
+import time     #
+import datetime #
+import logging  #
+import secrets  #
+
+# Flask関連モジュールのインポート
 from flask import Flask, render_template, request, redirect, session, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from google.oauth2 import id_token
@@ -57,7 +60,7 @@ KEY_ALLOWED_SUFFIXES = [
 db_user = os.environ.get('MYSQL_USER', 'root')
 db_password = os.environ.get('MYSQL_PASSWORD', 'rootpassword') # ★ここを後でDocker側で上書きします
 db_host = os.environ.get('MYSQL_HOST', 'db')
-db_name = os.environ.get('MYSQL_DB', 'my_flask_db')
+db_name = os.environ.get('MYSQL_DATABASE', 'my_flask_db')
 
 # 接続用URIを組み立てる
 app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}'
