@@ -1,26 +1,24 @@
 # 必須モジュールのインポート
-import os       #
-import time     #
-import datetime #
-import logging  #
-import secrets  #
+import time     # 時間の計測や待機を行うモジュール
+import datetime # 日付と時刻を扱うモジュール
+import logging  # ログ出力を行うモジュール
+
+# 設定ファイルのインポート
+import settings
 
 # Flask関連モジュールのインポート
-from flask import Flask, render_template, request, redirect, session, url_for, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from google.oauth2 import id_token
-from google.auth.transport import requests
+from flask import Flask, render_template, request, redirect, session, url_for, jsonify # Flaskの基本機能
+from flask_sqlalchemy import SQLAlchemy                                                # Flask用のORMライブラリ
+from google.oauth2 import id_token                                                     # Google OAuth 2.0 トークンの検証用モジュール
+from google.auth.transport import requests                                             # HTTPリクエスト用モジュール
 
 # ロギング設定
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s') # ログのフォーマット設定
 
 app = Flask(__name__)
-# ★セキュリティ対策: 環境変数があればそれを使い、なければランダム生成
-app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(16))
+app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(16)) # 環境変数があればそれを使い、なければランダム生成
 
-# ==========================================
-# 🛑 設定エリア
-# ==========================================
+# settings.py の代わりにここで設定
 GOOGLE_CLIENT_ID = "615786165928-5j6gjs46idi14kgqvcu6r6qkugi9f739.apps.googleusercontent.com"
 CODESPACES_URL = "https://squalid-poltergeist-wrgxjv4q5jq6299xg-5000.app.github.dev"
 
@@ -133,18 +131,18 @@ def index():
         else:
             return redirect(url_for('game'))
     
-    login_uri = f"{CODESPACES_URL}/login/callback"
-    return render_template("AnanIndex.html", client_id=GOOGLE_CLIENT_ID, domain=ALLOWED_DOMAINS, login_uri=login_uri)
+    login_uri = f"{CODESPACES_URL}/login"
+    return render_template("index.html", client_id=GOOGLE_CLIENT_ID, domain=ALLOWED_DOMAINS, login_uri=login_uri)
 
-@app.route("/Anan-Typing")
-def game():
+@app.route("/student/anan-typing")
+def game_onranking():
     user = session.get('user_info')
     if not user:
         return redirect(url_for('index'))
-    return render_template("Students.html", user=user)
+    return render_template("students.html", user=user)
 
-@app.route("/Anan-Only")
-def Anan_page():
+@app.route("/teacher/anan-typing")
+def game_unranking():
     user = session.get('user_info')
     if not user:
         return redirect(url_for('index'))
@@ -161,12 +159,12 @@ def Anan_page():
                 break
 
     if is_allowed:
-        return render_template("Teachers.html", user=user)
+        return render_template("teachers.html", user=user)
     else:
         # 権限がないのにアクセスした場合のエラー処理
         return "このページにアクセスする権限がありません。", 403
 
-@app.route("/login/callback", methods=['POST'])
+@app.route("/login", methods=['POST'])
 def login_callback():
     token = request.form.get('credential')
     try:
@@ -229,10 +227,10 @@ def login_callback():
         
         if is_teacher:
             print(f"★振分ログ: {email} -> Teachers.html")
-            return redirect(url_for('Anan_page'))
+            return redirect(url_for('game_unranking'))
         else:
             print(f"★振分ログ: {email} -> Students.html")
-            return redirect(url_for('game'))
+            return redirect(url_for('game_onranking'))
         # =================================================
 
     except ValueError as e:
