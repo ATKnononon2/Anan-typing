@@ -1,3 +1,14 @@
+# 必須モジュールのインポート
+import time     # 時間の計測や待機を行うモジュール
+import datetime # 日付と時刻を扱うモジュール
+import logging  # ログ出力を行うモジュール
+
+# Flask関連モジュールのインポート
+from flask import Flask, render_template, request, redirect, session, url_for, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
 # 設定ファイルのインポート
 import settings
 

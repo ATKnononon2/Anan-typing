@@ -1,15 +1,6 @@
 # 必須モジュールのインポート
 import os       # OSモジュールのインポート
-import time     # 時間の計測や待機を行うモジュール
-import datetime # 日付と時刻を扱うモジュール
-import logging  # ログ出力を行うモジュール
 import secrets  # セキュリティ関連のモジュールのインポート
-
-# Flask関連モジュールのインポート
-from flask import Flask, render_template, request, redirect, session, url_for, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from google.oauth2 import id_token
-from google.auth.transport import requests
 
 
 # ==========================================
@@ -19,6 +10,7 @@ from google.auth.transport import requests
 SECRET_KEY = os.environ.get('SECRET_KEY', secrets.token_hex(16))
 # デバッグモードの設定
 FLASK_DEBUG = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
+
 
 # ==========================================
 # 🗄️ データベース設定
@@ -32,6 +24,7 @@ MYSQL_DATABASE = os.environ.get('MYSQL_DATABASE', 'my_flask_db')
 SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{MYSQL_DATABASE}'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+
 # ==========================================
 # 🌐 Google OAuth / URL設定
 # ==========================================
@@ -39,10 +32,11 @@ GOOGLE_CLIENT_ID = "615786165928-5j6gjs46idi14kgqvcu6r6qkugi9f739.apps.googleuse
 CODESPACES_URL = "https://squalid-poltergeist-wrgxjv4q5jq6299xg-5000.app.github.dev"
 LOGIN_URI = f"{CODESPACES_URL}/login"
 
+
 # ==========================================
 # 👮‍♂️ 権限・許可リスト
 # ==========================================
-# ログイン自体を許可するドメイン/アドレス
+# ログイン自体を許可するドメイン
 ALLOWED_DOMAINS = [
     "it-mirai-h.ibk.ed.jp",
     "mail.ibk.ed.jp",
@@ -52,19 +46,22 @@ ALLOWED_DOMAINS = [
     "post.ibk.ed.jp"
 ]
 
+# 管理者用に許可するメールアドレス
 ALLOWED_EMAILS = [
     ""
 ]
 
-# 管理者・先生 (Teachers.html) 用の許可リスト
-KEY_ALLOWED_EMAILS = [
-    ""
-]
 
+# 以下先生 (teachers.html) 用に許可するドメイン
 KEY_ALLOWED_SUFFIXES = [
     "mail.ibk.ed.jp",
     "blue.ibk.ed.jp",
     "green.ibk.ed.jp",
     "yellow.ibk.ed.jp",
     "post.ibk.ed.jp"
+]
+
+# 管理者用に許可するメールアドレス
+KEY_ALLOWED_EMAILS = [
+    ""
 ]

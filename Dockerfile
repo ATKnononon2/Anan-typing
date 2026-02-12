@@ -14,8 +14,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # インストールが終わってから、ソースコード類をコピー
-COPY app.py .
-COPY settings.py .
+COPY app.py settings.py ./
 COPY templates ./templates
 COPY static ./static
 
