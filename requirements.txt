@@ -1,8 +1,15 @@
-Flask
-Flask-SQLAlchemy
-PyMySQL
-cryptography
-pytest
-google-auth
-google-auth-oauthlib
-requests
+# Webアプリケーションフレームワーク
+Flask                # Webアプリの本体（ルーティングや画面表示を担当）
+
+# データベース関連
+Flask-SQLAlchemy     # Flaskでデータベースを扱いやすくするORM（SQLを書かずにDB操作）
+PyMySQL              # PythonからMySQLサーバーに接続するためのドライバ
+cryptography         # MySQL 8.0以降の認証方式（caching_sha2_password）に対応するために必要
+
+# Googleログイン・OAuth認証
+google-auth          # Google APIを利用するための基本認証ライブラリ
+google-auth-oauthlib # Googleログイン（OAuth 2.0）フローを処理するライブラリ
+requests             # HTTP通信を行うライブラリ（内部的にOAuth通信で使用されるほか、API呼び出しにも利用）
+
+# 開発・デバッグ用
+# pytest             # Pythonコードの単体テストを行うためのフレームワーク
