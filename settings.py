@@ -1,5 +1,16 @@
-import os
-import secrets
+# 必須モジュールのインポート
+import os       # OSモジュールのインポート
+import time     # 時間の計測や待機を行うモジュール
+import datetime # 日付と時刻を扱うモジュール
+import logging  # ログ出力を行うモジュール
+import secrets  # セキュリティ関連のモジュールのインポート
+
+# Flask関連モジュールのインポート
+from flask import Flask, render_template, request, redirect, session, url_for, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
 
 # ==========================================
 # 🔐 基本設定 / セキュリティ
