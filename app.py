@@ -254,9 +254,9 @@ def add_ranking():
 
         if not (0 <= accuracy <= 100):
             return jsonify({"error": "不正な正答率です"}), 400
-        if tps > 30:
+        if tps > 12:
             return jsonify({"error": "異常な入力速度です"}), 400
-        if correct_strokes > 5000:
+        if correct_strokes > 720:
              return jsonify({"error": "異常な入力数です"}), 400
         
         new_ranking = Ranking(
