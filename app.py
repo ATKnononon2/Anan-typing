@@ -50,11 +50,18 @@ KEY_ALLOWED_SUFFIXES = [
     "post.ibk.ed.jp"
 ]
 
+# app.py の該当部分を書き換え
+
 # データベース設定
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    'SQLALCHEMY_DATABASE_URI', 
-    'mysql+pymysql://root:rootpassword@db/my_flask_db'
-)
+# 環境変数から個別に取得（なければデフォルト値を使うが、パスワードは空にしないこと）
+db_user = os.environ.get('MYSQL_USER', 'root')
+db_password = os.environ.get('MYSQL_PASSWORD', 'rootpassword') # ★ここを後でDocker側で上書きします
+db_host = os.environ.get('MYSQL_HOST', 'db')
+db_name = os.environ.get('MYSQL_DB', 'my_flask_db')
+
+# 接続用URIを組み立てる
+app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
 db = SQLAlchemy(app)
 
@@ -286,6 +293,24 @@ def add_ranking():
 
     try:
         data = request.json
+
+        # --- ★追加: 数値の検証（バリデーション） ---
+        accuracy = float(data.get('accuracy', 0))
+        tps = float(data.get('tps', 0))
+        correct_strokes = int(data.get('correct_strokes', 0))
+
+        # 1. 正答率が 0%未満 または 100%超え はおかしい
+        if not (0 <= accuracy <= 100):
+            return jsonify({"error": "不正な正答率です"}), 400
+
+        # 2. TPSが 30回/秒 を超えるのは人間にはほぼ不可能（世界記録でも20程度）
+        if tps > 30:
+            return jsonify({"error": "異常な入力速度です"}), 400
+
+        # 3. 入力数が極端に多い場合も弾く（ゲーム時間などによるが、一旦上限を設ける）
+        if correct_strokes > 5000:
+             return jsonify({"error": "異常な入力数です"}), 400
+        
         new_ranking = Ranking(
             email=user_info['email'],
             accuracy=data['accuracy'],

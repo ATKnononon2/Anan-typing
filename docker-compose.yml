@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   # 1. Pythonアプリの定義
   web:
@@ -5,9 +7,13 @@ services:
     ports:
       - "5000:5000"
     environment:
-      # ここでMySQLコンテナ(db)に接続する設定を書きます
-      # ホスト名は 'db' になります
-      SQLALCHEMY_DATABASE_URI: mysql+pymysql://root:rootpassword@db/my_flask_db
+      # .envファイルから値を読み込みます
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_DB=${MYSQL_DATABASE}
+      - SECRET_KEY=${SECRET_KEY}
+      - FLASK_DEBUG=${FLASK_DEBUG}
     depends_on:
       - db
 
@@ -15,12 +21,12 @@ services:
   db:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: my_flask_db
+      # .envファイルから値を読み込みます
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
     ports:
       - "3306:3306"
     volumes:
-      # データを永続化（再起動しても消えないようにする設定）
       - db_data:/var/lib/mysql
 
 volumes:
