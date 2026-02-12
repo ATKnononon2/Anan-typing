@@ -294,7 +294,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const pressedKey = event.key;
 
         // ▼▼▼▼▼▼▼▼▼▼▼▼ 万能変換ロジック開始 ▼▼▼▼▼▼▼▼▼▼▼▼
-    
         // -------------------------------------------------------------------------
         // 1. 【先頭文字が変わるパターン】 (ti -> chi, hu -> fu など)
         // -------------------------------------------------------------------------
@@ -343,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const remainingText = inputString.substring(currentIndex);
             const prevChar = inputString[currentIndex - 1]; // すでに打った1文字前の文字
 
-            // ★設定リスト：ここに行を追加するだけで対応パターンを増やせます
+            // ここに行を追加するだけで対応パターンを増やせる
             const rules = [
                 // --- S行 (si <-> shi, sha <-> sya) ---
                 { prev: 's', target: 'i',  input: 'h', replace: 'hi' }, // si -> shi
@@ -491,7 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
         messageElement.textContent = 'お疲れ様です。データを保存します。';
         messageElement.style.color = '#d9534f';
 
-        // ★修正済み: prompt（名前入力）を削除し、スコアデータだけを送信
+        // スコアデータだけを送信
         postRanking({ 
             accuracy: accuracy, 
             tps: tps, 
@@ -509,7 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                // ★修正点1: name はサーバー側(Python)でセッションから自動取得するので送信不要
+                // name はサーバー側(Python)でセッションから自動取得するので送信不要
                 accuracy: parseFloat(score.accuracy),
                 tps: parseFloat(score.tps),
                 correct_strokes: score.correct_strokes 
@@ -555,7 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const rankings = data.ranking_list;
             const myRankData = data.my_rank;
 
-            // ▼▼▼ 追加: 1. 「あなたの現在のランク」の表示処理 ▼▼▼
+            // ▼▼▼ 1. 「あなたの現在のランク」の表示処理 ▼▼▼
             if (myRankData && myRankContainer) {
                 // データがあれば表示オン
                 myRankContainer.style.display = 'block';
@@ -572,7 +571,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // ▼▼▼ 追加: 2. ランキングリスト（TOP 300）の表示処理 ▼▼▼
+            // ▼▼▼ 2. ランキングリスト（TOP 300）の表示処理 ▼▼▼
             rankListElement.innerHTML = '';
 
             if (!rankings || rankings.length === 0) {
@@ -583,7 +582,6 @@ document.addEventListener('DOMContentLoaded', () => {
             rankings.forEach((rank, index) => {
                 const li = document.createElement('li');
                 
-                // ★ご提示いただいたデザインを適用
                 // rank.name が無い場合を考慮して rank.email を使用
                 li.innerHTML = `
                     <span style="font-weight:bold;">${index + 1}. ${rank.email}</span><br>
