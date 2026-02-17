@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // - カウントダウン開始処理
-    function startCountdown() {
+    async function startCountdown() {
 
         // ゲームに必要な変数を初期化
         totalKeyStrokes = 0;    // ゲーム全体での総キータイプ数
@@ -235,6 +235,23 @@ document.addEventListener('DOMContentLoaded', () => {
         resultElement.textContent = '';                    // 結果表示をリセット
         timerElement.classList.add('countdown');           // タイマーにカウントダウンクラスを追加してスタイルを変更
 
+        // ゲーム開始前にサーバーからトークンを取得する処理
+        try {
+            // サーバーのトークン発行APIを叩く（URLは環境に合わせてください）
+            const response = await fetch('/api/start-game', { method: 'POST' });
+            if (response.ok) {
+                const data = await response.json();
+                gameToken = data.token; // サーバーが作ったハッシュを保持
+            } else {
+                alert('通信エラーが発生しました。ページをリロードしてください。');
+                return; // トークンが取れなければゲームを開始させない
+            }
+        } catch (error) {
+            console.error('通信エラー', error);
+            alert('サーバーとの通信に失敗しました。');
+            return;
+        }
+
         // カウントダウンの開始
         let count = 3;                    // カウントダウンの初期値
         timerElement.textContent = count; // タイマーにカウントダウンの数字を表示
@@ -257,24 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // - ゲーム開始処理
-    async function startGame() {
-
-        // ゲーム開始前にサーバーからトークンを取得する処理
-        try {
-            // サーバーのトークン発行APIを叩く（URLは環境に合わせてください）
-            const response = await fetch('/api/start-game', { method: 'POST' });
-            if (response.ok) {
-                const data = await response.json();
-                gameToken = data.token; // サーバーが作ったハッシュを保持
-            } else {
-                alert('通信エラーが発生しました。ページをリロードしてください。');
-                return; // トークンが取れなければゲームを開始させない
-            }
-        } catch (error) {
-            console.error('通信エラー', error);
-            alert('サーバーとの通信に失敗しました。');
-            return;
-        }
+    function startGame() {
 
         // ゲーム状態を初期化して開始
         isGameRunning = true;                                     // ゲーム状態を「実行中」に設定
