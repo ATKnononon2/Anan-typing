@@ -223,23 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
         timeLeft = initialTime; // タイマーをリセット
         unplayedWords = [];     // プレイ開始時に未出題リストを空にする
 
-        // ゲーム開始前にサーバーからトークンを取得する処理
-        try {
-            // サーバーのトークン発行APIを叩く（URLは環境に合わせてください）
-            const response = await fetch('/api/start-game', { method: 'POST' });
-            if (response.ok) {
-                const data = await response.json();
-                gameToken = data.token; // サーバーが作ったハッシュを保持
-            } else {
-                alert('通信エラーが発生しました。ページをリロードしてください。');
-                return; // トークンが取れなければゲームを開始させない
-            }
-        } catch (error) {
-            console.error('通信エラー', error);
-            alert('サーバーとの通信に失敗しました。');
-            return;
-        }
-        
         // UIの初期化
         startButton.disabled = true;                       // スタートボタンを一時的に無効化して、カウントダウン中のクリックを防止
         romajiTargetElement.disabled = true;               // ローマ字入力を一時的に無効化して、カウントダウン中の入力を防止
@@ -271,6 +254,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 startGame();
             }
         }, 1000);
+        
+        // ゲーム開始前にサーバーからトークンを取得する処理
+        try {
+            // サーバーのトークン発行APIを叩く（URLは環境に合わせてください）
+            const response = await fetch('/api/start-game', { method: 'POST' });
+            if (response.ok) {
+                const data = await response.json();
+                gameToken = data.token; // サーバーが作ったハッシュを保持
+            } else {
+                alert('通信エラーが発生しました。ページをリロードしてください。');
+                return; // トークンが取れなければゲームを開始させない
+            }
+        } catch (error) {
+            console.error('通信エラー', error);
+            alert('サーバーとの通信に失敗しました。');
+            return;
+        }
     }
 
     // - ゲーム開始処理
