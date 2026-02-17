@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let initialTime = 60;      // 初期時間を60秒に設定
     let currentIndex = 0;      // 現在の入力位置
     let unplayedWords = [];    // まだ出題されていないお題のリスト
+    let gameToken = '';        // サーバーから受け取る不正防止用トークン
 
 
     // - お題の定義
@@ -256,7 +257,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // - ゲーム開始処理
-    function startGame() {
+    async function startGame() {
+
+        // ゲーム開始前にサーバーからトークンを取得する処理
+        try {
+            // サーバーのトークン発行APIを叩く（URLは環境に合わせてください）
+            const response = await fetch('/api/start-game', { method: 'POST' });
+            if (response.ok) {
+                const data = await response.json();
+                gameToken = data.token; // サーバーが作ったハッシュを保持
+            } else {
+                alert('通信エラーが発生しました。ページをリロードしてください。');
+                return; // トークンが取れなければゲームを開始させない
+            }
+        } catch (error) {
+            console.error('通信エラー', error);
+            alert('サーバーとの通信に失敗しました。');
+            return;
+        }
 
         // ゲーム状態を初期化して開始
         isGameRunning = true;                                     // ゲーム状態を「実行中」に設定
@@ -559,10 +577,12 @@ document.addEventListener('DOMContentLoaded', () => {
         postRanking({ 
             accuracy: accuracy, 
             tps: tps, 
-            correct_strokes: totalCorrectInput 
+            correct_strokes: totalCorrectInput,
+            token: gameToken
         });
         
         gameStartTime = 0; 
+        gameToken = ''; // 使い終わったトークンはリセットして再利用を防ぐ
     }
 
     // - ランキングデータをバックエンドに送信する関数
@@ -576,7 +596,8 @@ document.addEventListener('DOMContentLoaded', () => {
             body: JSON.stringify({
                 accuracy: parseFloat(score.accuracy),
                 tps: parseFloat(score.tps),
-                correct_strokes: score.correct_strokes 
+                correct_strokes: score.correct_strokes,
+                token: score.token
             })
         })
         .then(response => {

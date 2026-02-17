@@ -2,6 +2,7 @@
 import time     # 時間の計測や待機を行うモジュール
 import datetime # 日付と時刻を扱うモジュール
 import logging  # ログ出力を行うモジュール
+import uuid     # ランダムなトークンを生成するためのモジュール
 
 # Flask関連モジュールのインポート
 from flask import Flask, render_template, request, redirect, session, url_for, jsonify
@@ -206,6 +207,24 @@ def logout():
 # ==========================================
 # 🛑 API (ランキング)
 # ==========================================
+@app.route('/api/start-game', methods=['POST'])
+def start_game():
+    user_info = session.get('user_info')
+    if not user_info:
+        return jsonify({"error": "ログインが必要です"}), 401
+
+    # ランダムなトークンと、サーバー側の現在時刻（開始時間）を取得
+    game_token = str(uuid.uuid4())
+    start_time = time.time()
+
+    # Flaskの暗号化セッションに開始時刻とトークンを記憶させる
+    session['active_game'] = {
+        'token': game_token,
+        'start_time': start_time
+    }
+    
+    return jsonify({"token": game_token}), 200
+
 @app.route('/api/rankings', methods=['GET'])
 def get_rankings():
     try:
@@ -253,6 +272,32 @@ def add_ranking():
     try:
         data = request.json
 
+        # ==========================================
+        # 🛡️ チート対策：トークンとプレイ時間の検証
+        # ==========================================
+        active_game = session.get('active_game')
+        client_token = data.get('token')
+
+        # 1. そもそもゲーム開始APIを叩いていない場合
+        if not active_game or not client_token:
+            return jsonify({"error": "無効なゲームセッションです。正規の手順でプレイしてください。"}), 400
+
+        # 2. トークンが一致しない場合（偽造）
+        if active_game['token'] != client_token:
+            return jsonify({"error": "トークンが一致しません。"}), 400
+
+        # 3. プレイ時間の検証 (60秒 ± 3秒)
+        elapsed_time = time.time() - active_game['start_time']
+        if not (57 <= elapsed_time <= 63):
+            session.pop('active_game', None) # 不正なのでセッションを破棄
+            print(f"★不正検知: {user_info['email']} が異常な時間({elapsed_time:.1f}秒)でスコアを送信しました。")
+            return jsonify({"error": "プレイ時間が不正です。コンソール等からの送信は禁止されています。"}), 400
+
+        # 4. 検証クリア！ 使い終わったトークンを破棄して「連打によるスコア多重送信」を防ぐ
+        session.pop('active_game', None)
+        # ==========================================
+
+        # --- 以下は既存のスコアチェックとDB保存処理 ---
         accuracy = float(data.get('accuracy', 0))
         tps = float(data.get('tps', 0))
         correct_strokes = int(data.get('correct_strokes', 0))
@@ -266,13 +311,14 @@ def add_ranking():
         
         new_ranking = Ranking(
             email=user_info['email'],
-            accuracy=data['accuracy'],
-            tps=data['tps'],
-            correct_strokes=data['correct_strokes']
+            accuracy=accuracy, # ※data['accuracy']から変更
+            tps=tps,
+            correct_strokes=correct_strokes
         )
         db.session.add(new_ranking)
         db.session.commit()
         return jsonify({"message": "ランキング保存成功", "data": new_ranking.to_dict()}), 201
+
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500
