@@ -223,18 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
         timeLeft = initialTime; // タイマーをリセット
         unplayedWords = [];     // プレイ開始時に未出題リストを空にする
 
-        // UIの初期化
-        startButton.disabled = true;                       // スタートボタンを一時的に無効化して、カウントダウン中のクリックを防止
-        romajiTargetElement.disabled = true;               // ローマ字入力を一時的に無効化して、カウントダウン中の入力を防止
-        messageElement.textContent = '準備してください...'; // メッセージをカウントダウン開始の案内に変更
-        messageElement.style.color = '#0056b3';          // メッセージの色を青に変更
-        targetTextElement.textContent = '';                // 漢字表示をリセット
-        hiraganaDisplayElement.textContent = '';           // ひらがな表示をリセット
-        romajiTargetElement.value = '';                    // 色付きローマ字ターゲットをリセット
-        romajiTargetElement.innerHTML = '';                // 色付きローマ字ターゲットのHTMLをリセット
-        resultElement.textContent = '';                    // 結果表示をリセット
-        timerElement.classList.add('countdown');           // タイマーにカウントダウンクラスを追加してスタイルを変更
-
         // ゲーム開始前にサーバーからトークンを取得する処理
         try {
             // サーバーのトークン発行APIを叩く（URLは環境に合わせてください）
@@ -251,6 +239,18 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('サーバーとの通信に失敗しました。');
             return;
         }
+        
+        // UIの初期化
+        startButton.disabled = true;                       // スタートボタンを一時的に無効化して、カウントダウン中のクリックを防止
+        romajiTargetElement.disabled = true;               // ローマ字入力を一時的に無効化して、カウントダウン中の入力を防止
+        messageElement.textContent = '準備してください...'; // メッセージをカウントダウン開始の案内に変更
+        messageElement.style.color = '#0056b3';          // メッセージの色を青に変更
+        targetTextElement.textContent = '';                // 漢字表示をリセット
+        hiraganaDisplayElement.textContent = '';           // ひらがな表示をリセット
+        romajiTargetElement.value = '';                    // 色付きローマ字ターゲットをリセット
+        romajiTargetElement.innerHTML = '';                // 色付きローマ字ターゲットのHTMLをリセット
+        resultElement.textContent = '';                    // 結果表示をリセット
+        timerElement.classList.add('countdown');           // タイマーにカウントダウンクラスを追加してスタイルを変更
 
         // カウントダウンの開始
         let count = 3;                    // カウントダウンの初期値
