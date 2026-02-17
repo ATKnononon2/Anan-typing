@@ -46,13 +46,12 @@ ALLOWED_DOMAINS = [
     "post.ibk.ed.jp"
 ]
 
-# 管理者用に許可するメールアドレス
+# 特定のアカウント用に許可するメールアドレス
 ALLOWED_EMAILS = [
     ""
 ]
 
-
-# 以下先生 (teachers.html) 用に許可するドメイン
+# 先生 (teachers.html) 用に許可するドメイン
 KEY_ALLOWED_SUFFIXES = [
     "mail.ibk.ed.jp",
     "blue.ibk.ed.jp",
@@ -61,7 +60,9 @@ KEY_ALLOWED_SUFFIXES = [
     "post.ibk.ed.jp"
 ]
 
-# 管理者用に許可するメールアドレス
+# 特定のアカウント (teachers.html) 用に許可するメールアドレス
 KEY_ALLOWED_EMAILS = [
     ""
 ]
+
+# 上記二項のALLOWEDに含まれていない場合、KEYにあってもteachers.htmlにアクセスできません。

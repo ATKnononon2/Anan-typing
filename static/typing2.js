@@ -377,6 +377,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
+        
+        // -------------------------------------------------------------------------
+        // 3. 【「ん」を n -> nn で入力できるパターン】
+        // -------------------------------------------------------------------------
+        if (currentIndex > 0 && currentIndex < inputString.length) {
+            const prevChar = inputString[currentIndex - 1]; // すでに打った1文字前の文字
+            const nextChar = inputString[currentIndex];     // 現在ターゲットになっている文字
+
+            // 直前に 'n' を打っていて、今回ユーザーが 'n' を打った場合
+            if (prevChar === 'n' && pressedKey === 'n') {
+                // 次のお題の文字が母音、'y'、またはすでに 'n' ではないかチェック
+                const isVowelOrYOrN = ['a', 'i', 'u', 'e', 'o', 'y', 'n'].includes(nextChar);
+                
+                // na, ni 等や既に nn になっている状態「以外」なら実行
+                if (!isVowelOrYOrN) {
+                    // お題文字列の現在の位置に 'n' を挿入して内部的に 'nn' に変換
+                    inputString = inputString.substring(0, currentIndex) + 'n' + inputString.substring(currentIndex);
+                    updateDisplay();
+                    // ※この直後の処理で pressedKey('n') と 新たに挿入された targetChar('n') がマッチして正解扱いになります
+                }
+            }
+        }
         // ▲▲▲▲▲▲▲▲▲▲▲▲ 万能変換ロジック終了 ▲▲▲▲▲▲▲▲▲▲▲▲
 
         

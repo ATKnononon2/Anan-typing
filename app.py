@@ -17,6 +17,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 app = Flask(__name__)
 
+
 # ==========================================
 # ⚙️ 設定の読み込み (settings.pyを使用)
 # ==========================================
@@ -25,6 +26,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = settings.SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = settings.SQLALCHEMY_TRACK_MODIFICATIONS
 
 db = SQLAlchemy(app)
+
 
 # ==========================================
 # 🛑 モデル定義
@@ -52,6 +54,7 @@ class Ranking(db.Model):
             'date': self.timestamp.strftime('%Y-%m-%d %H:%M:%S') 
         }
 
+
 # ==========================================
 # 🛑 DB初期化
 # ==========================================
@@ -67,6 +70,7 @@ def init_db():
             retries -= 1
             print(f"⏳ DB接続待機中... {retries}")
             time.sleep(2)
+
 
 # ==========================================
 # 🛑 ルーティング
@@ -198,6 +202,7 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 
+
 # ==========================================
 # 🛑 API (ランキング)
 # ==========================================
@@ -254,9 +259,9 @@ def add_ranking():
 
         if not (0 <= accuracy <= 100):
             return jsonify({"error": "不正な正答率です"}), 400
-        if tps > 12:
+        if tps > 14:
             return jsonify({"error": "異常な入力速度です"}), 400
-        if correct_strokes > 720:
+        if correct_strokes > 840:
              return jsonify({"error": "異常な入力数です"}), 400
         
         new_ranking = Ranking(
