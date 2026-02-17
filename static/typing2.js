@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { main: '俺は人に良い影響を与えられる人が素晴らしいと思うよ。', sub: 'おれはひとにいいえいきょうをあたえられるひとがすばらしいとおもうよ。', inp: 'orehahitoniiieikyouwoataerareruhitogasubarashiitoomouyo.' },
         { main: '20代後半まで限界まで勉強して限界を知った。', sub: 'にじゅうだいこうはんまでげんかいまでべんきょうしてげんかいをしった。', inp: 'nijuudaikouhanmadegenkaimadebenkyoushitegenkaiwoshitta.' },
         { main: 'できることとできないことを知れた。', sub: 'できることとできないことをしれた。', inp: 'dekirukototodekinaikotowoshireta.' },
-        { main: '阿南先生は全部知っていますよ。', sub: 'あなんせんせいはぜんぶしっていますよ。', inp: 'anansensehazenbushitteimasuyo.' },
+        { main: '阿南先生は全部知っていますよ。', sub: 'あなんせんせいはぜんぶしっていますよ。', inp: 'anansenseihazenbushitteimasuyo.' },
         { main: '悪い所を知った上でどう活かすか。', sub: 'わるいところをしったうえでどういかすか。', inp: 'waruitokorowoshittauededouikasuka.' },
         { main: '誇りを持って、しっかりと挑んでください。', sub: 'ほこりをもって、しっかりといどんでください。', inp: 'hokoriwomotte,shikkaritoidondekudasai.' },
         { main: '恥をかかないように、しっかりとした準備が必要だと思います。', sub: 'はじをかかないように、しっかりとしたじゅんびがひつようだとおもいます。', inp: 'hajiwokakanaiyouni,shikkaritoshitajunbigahitsuyoudatoomimasu.' },

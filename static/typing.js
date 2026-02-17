@@ -96,7 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
         { main: '阿南先生の休日のご予定はなんですか? 仕事です。', sub: 'あなんせんせいのきゅうじつのごよていはなんですか? しごとです。', inp: 'anansenseinokyuuzitunogoyoteihanandesuka?sigotodesu.' },
         { main: '阿南の言葉は譲り受けなんですよ。', sub: 'あなんせんせいのことばはゆずりうけなんですよ。', inp: 'anansenseinokotobahayuzuriukenandesuyo.' },
         { main: 'うちの課題研究は出せるレベルのことをやっている。', sub: 'うちのかだいけんきゅうはだせるれべるのことをやっている。', inp: 'utinokadaikenkyuuhadaserureberunokotowoyatteiru.' },
-        { main: '500万の金を出す代わり、全情コンの件数を報告しろ。', sub: '500まんのかねをだすかわり、ぜんじょうこんのけんすうをほうこくしろ。', inp: '500mannnokanewodasukawarini,zenzyoukonnnokensuuwohoukokusiro.' },
         { main: '冬休みに完成させてくるんですよね?', sub: 'ふゆやすみにかんせいさせてくるんですよね?', inp: 'fuyuyasuminikanseisasetekurundesuyone?' },
         { main: 'Geminiが使えない奴は、社会で役に立たない。', sub: 'Geminiがつかえないやつは、しゃかいでやくにたたない。', inp: 'Geminigatukaenaiyatuhasyakaideyakunitatanai.' },
         { main: 'Geminiと会話できない奴は社会でも会話できない。', sub: 'Geminiとかいわできないやつはしゃかでもかいわできない。', inp: 'Geminitokaiwadekinaiyatuhasyakaidemoyakunitatanai.' },
@@ -118,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { main: '俺は人に良い影響を与えられる人が素晴らしいと思うよ。', sub: 'おれはひとにいいえいきょうをあたえられるひとがすばらしいとおもうよ。', inp: 'orehahitoniiieikyouwoataerareruhitogasubarashiitoomouyo.' },
         { main: '20代後半まで限界まで勉強して限界を知った。', sub: 'にじゅうだいこうはんまでげんかいまでべんきょうしてげんかいをしった。', inp: 'nijuudaikouhanmadegenkaimadebenkyoushitegenkaiwoshitta.' },
         { main: 'できることとできないことを知れた。', sub: 'できることとできないことをしれた。', inp: 'dekirukototodekinaikotowoshireta.' },
-        { main: '阿南先生は全部知っていますよ。', sub: 'あなんせんせいはぜんぶしっていますよ。', inp: 'anansensehazenbushitteimasuyo.' },
+        { main: '阿南先生は全部知っていますよ。', sub: 'あなんせんせいはぜんぶしっていますよ。', inp: 'anansenseihazenbushitteimasuyo.' },
         { main: '悪い所を知った上でどう活かすか。', sub: 'わるいところをしったうえでどういかすか。', inp: 'waruitokorowoshittauededouikasuka.' },
         { main: '誇りを持って、しっかりと挑んでください。', sub: 'ほこりをもって、しっかりといどんでください。', inp: 'hokoriwomotte,shikkaritoidondekudasai.' },
         { main: '恥をかかないように、しっかりとした準備が必要だと思います。', sub: 'はじをかかないように、しっかりとしたじゅんびがひつようだとおもいます。', inp: 'hajiwokakanaiyouni,shikkaritoshitajunbigahitsuyoudatoomimasu.' },
@@ -254,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 startGame();
             }
         }, 1000);
-        
+
         // ゲーム開始前にサーバーからトークンを取得する処理
         try {
             // サーバーのトークン発行APIを叩く（URLは環境に合わせてください）
